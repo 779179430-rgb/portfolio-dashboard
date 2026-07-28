@@ -1,0 +1,2016 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📊 全板块监控 | 加速回血</title>
+<style>
+:root {
+  --bg: #0f1117; --card: #1a1d27; --border: #2a2d3a;
+  --text: #e1e4ea; --text-secondary: #8b8fa3;
+  --green: #26a69a; --red: #ef5350; --gold: #ffc107;
+  --blue: #42a5f5; --purple: #ab47bc; --orange: #ff9800; --cyan: #26c6da;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: var(--bg); color: var(--text); padding: 14px; line-height: 1.4;
+}
+h2 { font-size: 14px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+h2 .dot { width: 8px; height: 8px; border-radius: 50%; }
+.section { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; }
+
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 14px; font-size: 10px; font-weight: 600; }
+.badge-red { background: rgba(239,83,80,0.15); color: var(--red); border: 1px solid rgba(239,83,80,0.3); }
+.badge-yellow { background: rgba(255,193,7,0.15); color: var(--gold); border: 1px solid rgba(255,193,7,0.3); }
+.badge-green { background: rgba(38,166,154,0.15); color: var(--green); border: 1px solid rgba(38,166,154,0.3); }
+.badge-blue { background: rgba(66,165,245,0.15); color: var(--blue); border: 1px solid rgba(66,165,245,0.3); }
+
+.top-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.top-bar h1 { font-size: 18px; }
+.top-bar .time { font-size: 10px; color: var(--text-secondary); }
+
+/* 快速概览条 */
+.quick-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 6px; margin-bottom: 10px;
+}
+.quick-item {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px 10px; text-align: center;
+}
+.quick-item .q-name { font-size: 10px; color: var(--text-secondary); }
+.quick-item .q-price { font-size: 16px; font-weight: 700; margin: 2px 0; }
+.quick-item .q-change { font-size: 10px; }
+
+/* 板块评分网格 */
+.opp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 8px;
+}
+.opp-card {
+  border-radius: 10px; padding: 12px 14px;
+  border: 2px solid var(--border); transition: all 0.3s;
+}
+.opp-card.buy { border-color: var(--green); box-shadow: 0 0 16px rgba(38,166,154,0.12); background: linear-gradient(135deg, rgba(38,166,154,0.06), var(--card)); }
+.opp-card.watch { border-color: var(--gold); box-shadow: 0 0 8px rgba(255,193,7,0.06); }
+.opp-card.wait { border-color: var(--border); opacity: 0.85; }
+.opp-card.avoid { border-color: var(--red); opacity: 0.75; background: linear-gradient(135deg, rgba(239,83,80,0.04), var(--card)); }
+.opp-card.hold { border-color: var(--blue); }
+
+/* 安全边际 */
+.margin-bar { height: 6px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; margin: 4px 0; }
+.margin-fill { height: 100%; border-radius: 3px; transition: width 0.6s; }
+.margin-deep-value { background: linear-gradient(90deg, #1b5e20, #26a69a); }
+.margin-value { background: linear-gradient(90deg, #26a69a, #66bb6a); }
+.margin-fair { background: linear-gradient(90deg, #ffc107, #ff9800); }
+.margin-overvalued { background: linear-gradient(90deg, #ff9800, #ef5350); }
+.margin-bubble { background: linear-gradient(90deg, #ef5350, #e91e63); }
+.margin-label { font-size: 9px; display: flex; justify-content: space-between; }
+.margin-tag { display: inline-flex; align-items: center; gap: 3px; padding: 2px 7px; border-radius: 10px; font-size: 9px; font-weight: 700; }
+.mt-deep { background: rgba(38,166,154,0.15); color: #26a69a; border: 1px solid rgba(38,166,154,0.3); }
+.mt-value { background: rgba(102,187,106,0.15); color: #66bb6a; border: 1px solid rgba(102,187,106,0.3); }
+.mt-fair { background: rgba(255,193,7,0.12); color: #ffc107; border: 1px solid rgba(255,193,7,0.25); }
+.mt-high { background: rgba(255,152,0,0.15); color: #ff9800; border: 1px solid rgba(255,152,0,0.3); }
+.mt-bubble { background: rgba(239,83,80,0.15); color: #ef5350; border: 1px solid rgba(239,83,80,0.3); animation: pulse-bubble 1.5s infinite; }
+@keyframes pulse-bubble { 0%,100% { box-shadow: 0 0 0 0 rgba(239,83,80,0.5); } 50% { box-shadow: 0 0 0 4px rgba(239,83,80,0); } }
+
+.bubble-warn { background: linear-gradient(135deg, rgba(239,83,80,0.08), rgba(233,30,99,0.04)); border: 1px solid rgba(239,83,80,0.35); border-radius: 10px; padding: 12px 16px; margin-bottom: 10px; }
+.bubble-warn h3 { font-size: 12px; color: var(--red); margin-bottom: 6px; }
+.bubble-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; }
+.bubble-item { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+.bubble-item .bi-name { font-weight: 700; font-size: 11px; }
+.bubble-item .bi-risk { font-size: 10px; color: var(--red); margin: 3px 0; }
+.bubble-item .bi-detail { font-size: 9px; color: var(--text-secondary); }
+
+/* 估值概览条 */
+.valuation-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 6px; margin-bottom: 10px;
+}
+.vs-item {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px 10px; text-align: center;
+}
+.vs-item .vs-zone { font-size: 11px; font-weight: 700; }
+.vs-item .vs-count { font-size: 18px; font-weight: 700; margin: 2px 0; }
+.vs-item .vs-desc { font-size: 9px; color: var(--text-secondary); }
+
+.opp-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.opp-name { font-size: 13px; font-weight: 700; }
+.opp-signal { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 5px; }
+.sig-buy { background: rgba(38,166,154,0.2); color: var(--green); }
+.sig-watch { background: rgba(255,193,7,0.2); color: var(--gold); }
+.sig-wait { background: rgba(66,165,245,0.15); color: var(--blue); }
+.sig-avoid { background: rgba(239,83,80,0.15); color: var(--red); }
+.sig-hold { background: rgba(66,165,245,0.2); color: var(--blue); }
+
+.opp-metrics { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; margin-bottom: 6px; }
+.opp-metric { font-size: 10px; }
+.opp-metric .m-label { color: var(--text-secondary); font-size: 9px; }
+.opp-metric .m-value { font-weight: 600; font-size: 11px; }
+
+.opp-reason { font-size: 10px; color: var(--text-secondary); margin-bottom: 6px; line-height: 1.4; }
+.opp-action { font-size: 10px; padding: 5px 10px; border-radius: 6px; font-weight: 600; text-align: center; }
+.act-buy { background: rgba(38,166,154,0.12); color: var(--green); }
+.act-watch { background: rgba(255,193,7,0.1); color: var(--gold); }
+.act-wait { background: rgba(66,165,245,0.08); color: var(--blue); }
+.act-avoid { background: rgba(239,83,80,0.08); color: var(--red); }
+.act-hold { background: rgba(66,165,245,0.1); color: var(--blue); }
+
+/* 加速回血专区 */
+.speed-zone {
+  background: linear-gradient(135deg, rgba(255,152,0,0.08), rgba(239,83,80,0.04));
+  border: 1px solid rgba(255,152,0,0.3); border-radius: 12px; padding: 16px 20px; margin-bottom: 12px;
+}
+.speed-zone h2 { color: var(--orange); }
+.speed-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+.speed-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px 16px;
+}
+.speed-card .sc-name { font-weight: 700; font-size: 13px; margin-bottom: 6px; }
+.speed-card .sc-meta { font-size: 11px; color: var(--text-secondary); margin-bottom: 4px; }
+.speed-card .sc-roi { font-size: 18px; font-weight: 700; margin: 6px 0; }
+.speed-card .sc-code { font-size: 10px; color: var(--cyan); font-family: monospace; }
+
+/* 板块排序榜 */
+.rank-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+.rank-table th { text-align: left; padding: 5px 6px; color: var(--text-secondary); font-weight: 500; font-size: 9px; border-bottom: 1px solid var(--border); }
+.rank-table td { padding: 6px 6px; border-bottom: 1px solid rgba(42,45,58,0.5); }
+.rank-table tr:last-child td { border-bottom: none; }
+.rank-1 { color: var(--gold); font-weight: 700; }
+.rank-2 { color: var(--text); font-weight: 700; }
+.rank-3 { color: var(--orange); font-weight: 600; }
+
+/* 持仓 */
+table { width: 100%; border-collapse: collapse; font-size: 11px; }
+th { text-align: left; padding: 5px 6px; color: var(--text-secondary); font-weight: 500; font-size: 9px; border-bottom: 1px solid var(--border); }
+td { padding: 6px 6px; border-bottom: 1px solid rgba(42,45,58,0.5); }
+tr:last-child td { border-bottom: none; }
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+@media (max-width: 1000px) { .grid-2 { grid-template-columns: 1fr; } }
+
+.footer { text-align: center; font-size: 9px; color: var(--text-secondary); margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border); }
+
+.refresh-bar {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 12px; background: var(--card); border: 1px solid var(--border);
+  border-radius: 8px; font-size: 10px; margin-bottom: 10px;
+}
+.progress-track { flex: 1; height: 3px; background: rgba(255,255,255,0.06); border-radius: 2px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--orange); border-radius: 2px; transition: width 1s linear; }
+
+@keyframes pulse-buy { 0%,100% { box-shadow: 0 0 0 0 rgba(38,166,154,0.4); } 50% { box-shadow: 0 0 0 6px rgba(38,166,154,0); } }
+.opp-card.buy { animation: pulse-buy 3s infinite; }
+
+.toast {
+  position: fixed; top: 16px; right: 16px; z-index: 999;
+  max-width: 360px; padding: 14px 18px; border-radius: 10px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  display: none; animation: slideIn 0.3s ease;
+}
+.toast.show { display: block; }
+.toast.buy { background: var(--card); border: 1px solid var(--green); }
+.toast .toast-close { position: absolute; top: 6px; right: 10px; cursor: pointer; font-size: 14px; color: var(--text-secondary); }
+.toast .toast-title { font-weight: 700; font-size: 13px; margin-bottom: 3px; }
+.toast .toast-body { font-size: 11px; color: var(--text-secondary); }
+@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div><h1>📊 全板块监控 <span style="color:var(--red);font-size:15px;">📉 今日亏损 ¥681</span> <span style="font-size:10px;color:var(--text-secondary);">7/28 · 持仓全线回调</span></h1></div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;">
+    <span class="badge badge-red">📉 今日 -¥681</span>
+    <span class="badge badge-yellow">🎯 目标：保本优先</span>
+    <span class="badge badge-blue">📅 全年累计 -¥8,568</span>
+    <span class="badge badge-green">⚡ 真实账户数据</span>
+  </div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;">
+    <span class="badge badge-red">📉 全年累计 -19.6%</span>
+    <span class="badge badge-yellow">🎯 目标：保本优先</span>
+    <span class="badge badge-blue">📅 全年累计 -¥8,568</span>
+    <span class="badge badge-red">📉 今日 -¥681</span>
+  </div>
+</div>
+
+<!-- 行情快览 -->
+<div class="quick-strip">
+  <div class="quick-item"><div class="q-name">🥇 黄金</div><div class="q-price" style="color:var(--gold);">$4,044</div><div class="q-change" style="color:var(--red);">▼ 0.8%</div></div>
+  <div class="quick-item"><div class="q-name">🥈 白银</div><div class="q-price">$57.20</div><div class="q-change" style="color:var(--red);">▼ 2.1%</div></div>
+  <div class="quick-item"><div class="q-name">📈 沪深300</div><div class="q-price" style="color:var(--blue);">4,587</div><div class="q-change" style="color:var(--green);">昨日 +1.15%</div></div>
+  <div class="quick-item"><div class="q-name">💵 美元</div><div class="q-price">101.2</div><div class="q-change" style="color:var(--green);">▼ 0.1%</div></div>
+  <div class="quick-item"><div class="q-name">🏦 国债</div><div class="q-price">1.73%</div><div class="q-change" style="color:var(--text-secondary);">债牛</div></div>
+  <div class="quick-item"><div class="q-name">📊 成交额</div><div class="q-price" style="color:var(--green);">2.08万亿</div><div class="q-change" style="color:var(--green);">放量</div></div>
+  <div class="quick-item"><div class="q-name">📈 涨跌比</div><div class="q-price" style="color:var(--green);">5200↑</div><div class="q-change" style="color:var(--green);">普涨 +2.73%</div></div>
+</div>
+
+<!-- ====== 🤖 自动提醒状态条 ====== -->
+<div id="alert-bar" style="display:none;background:linear-gradient(135deg,rgba(255,152,0,0.08),rgba(239,83,80,0.04));border:1px solid rgba(255,152,0,0.35);border-radius:10px;padding:10px 16px;margin-bottom:10px;">
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+    <span style="font-size:14px;">🤖</span>
+    <strong style="font-size:12px;color:var(--orange);">自动监控提醒</strong>
+    <span style="font-size:9px;color:var(--text-secondary);">每次刷新自动检测 · 入场机会 · 泡沫预警 · 持仓触发</span>
+  </div>
+  <div id="alert-list" style="display:flex;flex-direction:column;gap:3px;"></div>
+</div>
+
+<!-- 刷新 -->
+<div class="refresh-bar">
+  <span>🔄 实时监控中</span><span style="color:var(--text-secondary);">|</span>
+  <span id="last-update">数据: 2026-07-28 收盘</span><span style="color:var(--text-secondary);">|</span>
+  <span>下次刷新: <strong id="countdown">60:00</strong></span>
+  <span style="margin-left:auto;color:var(--text-secondary);font-size:9px;">覆盖33板块 · 四维分析 · 每小时刷新</span>
+  <div class="progress-track"><div class="progress-fill" id="progress-bar" style="width:0%"></div></div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <span class="toast-close" onclick="document.getElementById('toast').classList.remove('show')">✕</span>
+  <div class="toast-title" id="toast-title"></div>
+  <div class="toast-body" id="toast-body"></div>
+</div>
+
+
+
+<!-- 持仓 + 条件触发（单表合一） -->
+<div class="section">
+  <h2><span class="dot" style="background:var(--blue);"></span>📋 持仓总览 & 逐行触发条件</h2>
+  <div style="overflow-x:auto;">
+    <table>
+      <thead><tr><th>标的</th><th>持仓成本</th><th>估算市值</th><th>占比</th><th>累计盈亏</th><th>今日涨跌</th><th>触发条件</th><th>当前状态</th></tr></thead>
+      <tbody id="position-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ====== ⚡ 加速回血专区 ====== -->
+<div class="speed-zone">
+  <h2><span class="dot" style="background:var(--orange);"></span>⚡ 加速回血策略 — 高波动轮动品种</h2>
+  <div class="speed-grid">
+    <div class="speed-card" style="border-color:rgba(38,166,154,0.3);">
+      <div class="sc-name">🥇 有色金属ETF联接</div>
+      <div class="sc-meta">PE 19.7x · 分位 28.2% · 5日主力 <span style="color:var(--green);">+82.7亿</span></div>
+      <div class="sc-roi" style="color:var(--green);">近1月 +15~20% 弹性</div>
+      <div class="sc-meta">黄金反弹+工业金属补库双驱动，高波动快轮动</div>
+      <div class="sc-code">支付宝搜：有色金属ETF联接C</div>
+    </div>
+    <div class="speed-card" style="border-color:rgba(255,193,7,0.3);">
+      <div class="sc-name">⚡ 电网设备ETF联接（加仓）</div>
+      <div class="sc-meta">PE 33.5x · 分位 51.3% · 5日主力 <span style="color:var(--green);">+35.1亿</span></div>
+      <div class="sc-roi" style="color:var(--green);">近1年 +40%，政策催化中</div>
+      <div class="sc-meta">发改委能源局新政，涨停潮后回踩是机会</div>
+      <div class="sc-code">支付宝搜：025857 华夏电网设备联接C</div>
+    </div>
+    <div class="speed-card" style="border-color:rgba(255,193,7,0.3);">
+      <div class="sc-name">🍶 食品饮料ETF联接</div>
+      <div class="sc-meta">PE 20.7x · 分位 <span style="color:var(--green);">30.0%</span> · 近2周反弹</div>
+      <div class="sc-roi" style="color:var(--gold);">估值修复空间 30%+</div>
+      <div class="sc-meta">PE处于历史低估区间，超跌反弹潜力大</div>
+      <div class="sc-code">支付宝搜：013126 华夏食品饮料联接C</div>
+    </div>
+    <div class="speed-card">
+      <div class="sc-name">🏦 红利低波联接（防守底仓）</div>
+      <div class="sc-meta">银行PE 7.0x · 分位 <span style="color:var(--green);">13.0%</span> · 股息4.2%</div>
+      <div class="sc-roi" style="color:var(--blue);">年化稳增 7-10%</div>
+      <div class="sc-meta">低波动压舱石，银行板块7月逆势上涨</div>
+      <div class="sc-code">支付宝搜：007467 华泰红利低波联接C</div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== 🛡️ 估值安全边际概览 ====== -->
+<div class="section">
+  <h2><span class="dot" style="background:var(--green);"></span>🛡️ 安全边际评估 — 估值 vs 内在价值</h2>
+  <div class="valuation-strip" id="valuation-strip"></div>
+</div>
+
+<!-- ====== 🔴 泡沫预警 ====== -->
+<div class="bubble-warn" id="bubble-warn" style="display:none;">
+  <h3>🔴 泡沫预警 — 以下板块估值远超内在价值，安全边际严重不足</h3>
+  <div class="bubble-grid" id="bubble-grid"></div>
+</div>
+
+<!-- ====== 33板块评分 ====== -->
+<div class="section">
+  <h2><span class="dot" style="background:var(--green);"></span>🎯 33大板块入场评分 & 四维分析（安全边际 + 技术面 + 基本面 + 宏观环境）</h2>
+  <div class="opp-grid" id="opp-grid"></div>
+</div>
+
+<!-- ====== 板块轮动 & 资金流向榜（合并生命周期+资金流） ====== -->
+<div class="section">
+  <h2><span class="dot" style="background:var(--cyan);"></span>📊 板块轮动 & 资金流向榜（周转越快→回血越快）</h2>
+  <table class="rank-table">
+    <thead><tr><th>排名</th><th>板块</th><th>5日主力</th><th>今日主力</th><th>PE分位</th><th>安全边际</th><th>生命周期</th><th>回血适配</th></tr></thead>
+    <tbody id="rank-body"></tbody>
+  </table>
+</div>
+
+<div class="footer">
+  ⚠️ 本看板由 AI 基于公开数据生成，仅供参考，不构成投资建议。<br>
+  数据：COMEX/沪深交易所/腾讯自选股 | 2026-07-28 收盘<br>
+  安全边际评估基于PE/PB历史分位，内在价值以50%分位为合理中枢估算<br>
+  所有投资决策请自行判断。投资有风险，决策需谨慎。
+</div>
+
+<script>
+// ====== 33大板块完整数据（含安全边际 + 技术面 + 基本面 + 宏观环境） ======
+function marginZone(pePct) {
+  if (pePct <= 15) return { zone:'深度低估', cls:'deep', tag:'mt-deep', emoji:'🟢', score:5 };
+  if (pePct <= 30) return { zone:'低估', cls:'value', tag:'mt-value', emoji:'🟢', score:4 };
+  if (pePct <= 50) return { zone:'合理偏低', cls:'fair', tag:'mt-fair', emoji:'🟡', score:3 };
+  if (pePct <= 70) return { zone:'合理偏高', cls:'fair', tag:'mt-fair', emoji:'🟡', score:2 };
+  if (pePct <= 85) return { zone:'高估', cls:'overvalued', tag:'mt-high', emoji:'🟠', score:1 };
+  return { zone:'⚠️ 泡沫风险', cls:'bubble', tag:'mt-bubble', emoji:'🔴', score:0 };
+}
+
+function intrinsicDeviation(pePct) {
+  const dev = ((50 - pePct) / 50 * 100);
+  if (dev > 0) return `较内在价值折价 ${dev.toFixed(0)}%`;
+  return `较内在价值溢价 ${Math.abs(dev).toFixed(0)}%`;
+}
+
+const ALL_SECTORS = [
+  {
+    "id": "bank",
+    "name": "🏦 银行",
+    "pe": 7.04,
+    "pePct": 13.0,
+    "pb": 0.67,
+    "pbPct": 1.0,
+    "fundToday": -0.25,
+    "fund5d": -54.97,
+    "fund10d": -122.39,
+    "fund20d": -200,
+    "volatility": "低",
+    "speed": "慢",
+    "lifecycle": "成熟",
+    "competition": "高集中",
+    "policy": "中性偏多",
+    "macro": "降息周期利好红利",
+    "leaders": "工商银行(601398), 建设银行(601939)",
+    "roe": "10-12%",
+    "margin": "净息差1.5-1.8%",
+    "relation": "🛡️ 红利底层（已持有）",
+    "reason": "PE历史最低区，股息4.2%，7月逆势上涨，适合压舱。高股息策略在利率下行周期有结构性优势。",
+    "action": "已持有，不加仓",
+    "oppClass": "hold",
+    "signal": "✅ 持有",
+    "techSignal": "MA多头排列，RSI 55中性偏强",
+    "volumeNote": "缩量调整，筹码稳定",
+    "safety": {
+      "zone": "深度低估",
+      "cls": "deep",
+      "tag": "mt-deep",
+      "emoji": "🟢",
+      "score": 5
+    },
+    "deviation": "较内在价值折价 74%"
+  },
+  {
+    "id": "food",
+    "name": "🍶 食品饮料",
+    "pe": 20.65,
+    "pePct": 1.4,
+    "pb": 5.02,
+    "pbPct": 13.8,
+    "fundToday": -0.1,
+    "fund5d": -32.76,
+    "fund10d": -44.4,
+    "fund20d": -80,
+    "volatility": "中",
+    "speed": "中",
+    "lifecycle": "成熟",
+    "competition": "中高集中",
+    "policy": "促消费政策利好",
+    "macro": "消费复苏偏弱",
+    "leaders": "茅台(600519), 五粮液(000858)",
+    "roe": "20-25%",
+    "margin": "毛利率75%+, 净利率45%+",
+    "relation": "🆕 无持仓",
+    "reason": "PE仅1.4%分位！历史极限低估，估值修复空间40%+。消费龙头ROE超20%，护城河深厚。",
+    "action": "⚡ 优先关注！小仓试探",
+    "oppClass": "buy",
+    "signal": "🟢 入场 4★",
+    "techSignal": "超跌后MACD底背离，RSI 35超卖区",
+    "volumeNote": "缩量筑底，等待放量确认",
+    "safety": {
+      "zone": "深度低估",
+      "cls": "deep",
+      "tag": "mt-deep",
+      "emoji": "🟢",
+      "score": 5
+    },
+    "deviation": "较内在价值折价 97%"
+  },
+  {
+    "id": "diangwang",
+    "name": "⚡ 电网设备",
+    "pe": 33.48,
+    "pePct": 51.3,
+    "pb": 2.87,
+    "pbPct": 53.1,
+    "fundToday": 3.81,
+    "fund5d": 35.12,
+    "fund10d": -13.9,
+    "fund20d": -30,
+    "volatility": "高",
+    "speed": "快",
+    "lifecycle": "成长→成熟",
+    "competition": "中集中",
+    "policy": "能源局新政强利好",
+    "macro": "新基建投资加速",
+    "leaders": "国电南瑞(600406), 许继电气(000400)",
+    "roe": "12-15%",
+    "margin": "毛利率30%+, 净利率8-12%",
+    "relation": "✅ 已持有（20.5%）",
+    "reason": "5日主力+35亿，发改委能源局新政催化，近1年+40%。新型电力系统建设是长期主线。",
+    "action": "已持仓，不加仓",
+    "oppClass": "hold",
+    "signal": "✅ 持有",
+    "techSignal": "MA5/10金叉，MACD红柱放大",
+    "volumeNote": "放量突破后缩量回踩，健康",
+    "safety": {
+      "zone": "合理偏高",
+      "cls": "fair",
+      "tag": "mt-fair",
+      "emoji": "🟡",
+      "score": 2
+    },
+    "deviation": "较内在价值溢价 3%"
+  },
+  {
+    "id": "medical",
+    "name": "💊 医药生物",
+    "pe": 32.6,
+    "pePct": 24.6,
+    "pb": 3.21,
+    "pbPct": 2.9,
+    "fundToday": 6.39,
+    "fund5d": -166.83,
+    "fund10d": -197.69,
+    "fund20d": -300,
+    "volatility": "中",
+    "speed": "慢",
+    "lifecycle": "成长",
+    "competition": "分散",
+    "policy": "集采压力边际减弱",
+    "macro": "老龄化长期利好",
+    "leaders": "恒瑞医药(600276), 迈瑞医疗(300760)",
+    "roe": "10-15%",
+    "margin": "毛利率60%+, 净利率15-20%",
+    "relation": "🆕 无持仓",
+    "reason": "PE 24.6%分位低估区，PB仅2.9%分位极低！今日+6.4亿回流。创新药出海+老龄化是长逻辑。",
+    "action": "关注，等资金确认",
+    "oppClass": "watch",
+    "signal": "🟡 关注 3★",
+    "techSignal": "底部震荡，MACD即将金叉",
+    "volumeNote": "缩量至地量，变盘临近",
+    "safety": {
+      "zone": "低估",
+      "cls": "value",
+      "tag": "mt-value",
+      "emoji": "🟢",
+      "score": 4
+    },
+    "deviation": "较内在价值折价 51%"
+  },
+  {
+    "id": "metal",
+    "name": "🥇 有色金属",
+    "pe": 17.84,
+    "pePct": 9.5,
+    "pb": 2.4,
+    "pbPct": 29.4,
+    "fundToday": 4.38,
+    "fund5d": 82.67,
+    "fund10d": -41.18,
+    "fund20d": -80,
+    "volatility": "极高",
+    "speed": "极快",
+    "lifecycle": "成熟",
+    "competition": "中集中",
+    "policy": "资源安全战略利好",
+    "macro": "全球降息+弱美元利好大宗",
+    "leaders": "紫金矿业(601899), 洛阳钼业(603993)",
+    "roe": "15-20%",
+    "margin": "毛利率25%+, 净利率10-15%",
+    "relation": "🆕 无持仓 ⚡加速品种",
+    "reason": "PE 9.5%分位深度低估！5日主力+82.7亿！黄金反弹+工业金属补库双驱动。全球央行购金趋势不变。",
+    "action": "⚡ 优先关注！5%试探",
+    "oppClass": "buy",
+    "signal": "🟢 入场 5★",
+    "techSignal": "突破60日线，MACD金叉零轴上",
+    "volumeNote": "放量突破，资金认可度高",
+    "safety": {
+      "zone": "深度低估",
+      "cls": "deep",
+      "tag": "mt-deep",
+      "emoji": "🟢",
+      "score": 5
+    },
+    "deviation": "较内在价值折价 81%"
+  },
+  {
+    "id": "semicon",
+    "name": "💻 半导体",
+    "pe": 103.45,
+    "pePct": 96.1,
+    "pb": 4.83,
+    "pbPct": 69.1,
+    "fundToday": -111.7,
+    "fund5d": -58.42,
+    "fund10d": -1377.77,
+    "fund20d": -2000,
+    "volatility": "极高",
+    "speed": "快",
+    "lifecycle": "成长",
+    "competition": "中集中",
+    "policy": "国产替代长期利好",
+    "macro": "AI算力需求旺盛",
+    "leaders": "中芯国际(688981), 北方华创(002371)",
+    "roe": "5-10%",
+    "margin": "毛利率35-45%, 净利率10-20%",
+    "relation": "🆕 无持仓",
+    "reason": "PE 96.1%分位 🔴泡沫区！资金大幅流出。虽有国产替代叙事但估值已透支3-5年。",
+    "action": "🚫 远离！泡沫风险",
+    "oppClass": "avoid",
+    "signal": "🚫 远离 0★",
+    "techSignal": "MACD顶背离，RSI 70+超买",
+    "volumeNote": "高位放量滞涨，出货迹象",
+    "safety": {
+      "zone": "⚠️ 泡沫风险",
+      "cls": "bubble",
+      "tag": "mt-bubble",
+      "emoji": "🔴",
+      "score": 0
+    },
+    "deviation": "较内在价值溢价 92%"
+  },
+  {
+    "id": "defense",
+    "name": "🛡️ 国防军工",
+    "pe": 65.51,
+    "pePct": 83.3,
+    "pb": 3.43,
+    "pbPct": 46.3,
+    "fundToday": -5.36,
+    "fund5d": -21.92,
+    "fund10d": -274.71,
+    "fund20d": -400,
+    "volatility": "高",
+    "speed": "中",
+    "lifecycle": "成长",
+    "competition": "高集中",
+    "policy": "国防预算稳步增长",
+    "macro": "地缘政治紧张",
+    "leaders": "中航沈飞(600760), 航发动力(600893)",
+    "roe": "5-8%",
+    "margin": "毛利率15-20%, 净利率5-8%",
+    "relation": "🆕 无持仓",
+    "reason": "PE 83.3%分位 🟠高估，资金持续流出。军工订单确定性高但估值已反映预期。",
+    "action": "暂时不关注",
+    "oppClass": "wait",
+    "signal": "🔵 等待 1★",
+    "techSignal": "MA均线空头排列，MACD绿柱",
+    "volumeNote": "缩量下跌，无企稳信号",
+    "safety": {
+      "zone": "高估",
+      "cls": "overvalued",
+      "tag": "mt-high",
+      "emoji": "🟠",
+      "score": 1
+    },
+    "deviation": "较内在价值溢价 67%"
+  },
+  {
+    "id": "coal",
+    "name": "⛽ 煤炭",
+    "pe": 10.38,
+    "pePct": 21.8,
+    "pb": 1.59,
+    "pbPct": 42.8,
+    "fundToday": -1.6,
+    "fund5d": -1.15,
+    "fund10d": -7.65,
+    "fund20d": -15,
+    "volatility": "中",
+    "speed": "中",
+    "lifecycle": "成熟→衰退",
+    "competition": "中集中",
+    "policy": "双碳约束长期偏空",
+    "macro": "能源安全短期支撑",
+    "leaders": "中国神华(601088), 陕西煤业(601225)",
+    "roe": "15-20%",
+    "margin": "毛利率35%+, 净利率15-20%",
+    "relation": "🆕 无持仓",
+    "reason": "PE 21.8%分位低估区，高股息品种。但煤炭长期受碳中和压制，成长性不足。",
+    "action": "可关注，不急入场",
+    "oppClass": "watch",
+    "signal": "🟡 关注 3★",
+    "techSignal": "MA缠绕无方向，RSI 45",
+    "volumeNote": "缩量横盘，缺乏催化剂",
+    "safety": {
+      "zone": "低估",
+      "cls": "value",
+      "tag": "mt-value",
+      "emoji": "🟢",
+      "score": 4
+    },
+    "deviation": "较内在价值折价 56%"
+  },
+  {
+    "id": "nev",
+    "name": "🚗 新能源车",
+    "pe": 28.23,
+    "pePct": 43.8,
+    "pb": 3.29,
+    "pbPct": 56.0,
+    "fundToday": 20.45,
+    "fund5d": -294.14,
+    "fund10d": -1418.99,
+    "fund20d": -2000,
+    "volatility": "极高",
+    "speed": "极快",
+    "lifecycle": "成长→成熟",
+    "competition": "激烈",
+    "policy": "补贴退坡但双积分支撑",
+    "macro": "渗透率增速放缓",
+    "leaders": "比亚迪(002594), 宁德时代(300750)",
+    "roe": "15-25%",
+    "margin": "毛利率18-25%, 净利率5-10%",
+    "relation": "🆕 无持仓 ⚡加速品种",
+    "reason": "PE 43.8%分位合理偏低，今日+20.5亿大举回流。行业渗透率超40%但出海逻辑打开新空间。",
+    "action": "⚡ 观察回流持续性",
+    "oppClass": "watch",
+    "signal": "🟡 关注 3★",
+    "techSignal": "MACD底背离，RSI 40反弹",
+    "volumeNote": "今日放量，关注能否持续",
+    "safety": {
+      "zone": "合理偏低",
+      "cls": "fair",
+      "tag": "mt-fair",
+      "emoji": "🟡",
+      "score": 3
+    },
+    "deviation": "较内在价值折价 12%"
+  },
+  {
+    "id": "solar",
+    "name": "☀️ 光伏设备",
+    "pe": -33.44,
+    "pePct": 50.5,
+    "pb": 2.48,
+    "pbPct": 41.7,
+    "fundToday": -0.21,
+    "fund5d": 2.35,
+    "fund10d": -68.93,
+    "fund20d": -100,
+    "volatility": "极高",
+    "speed": "极快",
+    "lifecycle": "成熟",
+    "competition": "极度激烈",
+    "policy": "产能过剩出清中",
+    "macro": "全球装机增速放缓",
+    "leaders": "隆基绿能(601012), 阳光电源(300274)",
+    "roe": "5-10%（下滑中）",
+    "margin": "毛利率15-20%（压缩中）",
+    "relation": "🆕 无持仓",
+    "reason": "PE为负（行业亏损期）。产能过剩严重，价格战持续。逆向布局需极强耐心。",
+    "action": "逆向选手可关注，风险高",
+    "oppClass": "watch",
+    "signal": "🟡 逆向 2★",
+    "techSignal": "底部震荡，无明确方向",
+    "volumeNote": "缩量阴跌，资金观望",
+    "safety": {
+      "zone": "合理偏高",
+      "cls": "fair",
+      "tag": "mt-fair",
+      "emoji": "🟡",
+      "score": 2
+    },
+    "deviation": "较内在价值溢价 1%"
+  },
+  {
+    "id": "ai",
+    "name": "🤖 人工智能",
+    "pe": 43.2,
+    "pePct": 66.1,
+    "pb": 2.59,
+    "pbPct": 51.4,
+    "fundToday": -49.82,
+    "fund5d": -402.6,
+    "fund10d": -1445.63,
+    "fund20d": -1800,
+    "volatility": "极高",
+    "speed": "快",
+    "lifecycle": "成长",
+    "competition": "中集中",
+    "policy": "AI强国战略利好",
+    "macro": "算力军备竞赛",
+    "leaders": "科大讯飞(002230), 海光信息(688041)",
+    "roe": "5-12%",
+    "margin": "毛利率40-55%, 净利率5-15%",
+    "relation": "✅ 已清仓",
+    "reason": "PE 66.1%分位合理偏高，20日流出1800亿。AI叙事虽强但A股标的盈利兑现慢。",
+    "action": "🚫 远离",
+    "oppClass": "avoid",
+    "signal": "🚫 远离 0★",
+    "techSignal": "MACD死叉，跌破60日线",
+    "volumeNote": "放量下跌，趋势走坏",
+    "safety": {
+      "zone": "合理偏高",
+      "cls": "fair",
+      "tag": "mt-fair",
+      "emoji": "🟡",
+      "score": 2
+    },
+    "deviation": "较内在价值溢价 32%"
+  },
+  {
+    "id": "comm_space",
+    "name": "🚀 商业航天",
+    "pe": 58.4,
+    "pePct": 80.1,
+    "pb": 2.44,
+    "pbPct": 46.3,
+    "fundToday": 8.13,
+    "fund5d": -139.37,
+    "fund10d": -748.46,
+    "fund20d": -1121.47,
+    "volatility": "极高",
+    "speed": "极快",
+    "lifecycle": "初创→成长",
+    "competition": "低集中",
+    "policy": "国家战略重点扶持",
+    "macro": "太空经济万亿蓝海",
+    "leaders": "航天电子(600879), 中国卫星(600118)",
+    "roe": "3-8%",
+    "margin": "毛利率20-30%, 净利率5-10%",
+    "relation": "🆕 无持仓",
+    "reason": "PE 80.1%分位高估，但赛道处于0→1爆发期。政策强驱动+卫星互联网建设加速。估值虽高但成长可消化。",
+    "action": "🔵 等待回调入场",
+    "oppClass": "watch",
+    "signal": "🟡 关注 2★",
+    "techSignal": "高位震荡，RSI 62",
+    "volumeNote": "缩量整理，等待方向选择",
+    "safety": {
+      "zone": "高估",
+      "cls": "overvalued",
+      "tag": "mt-high",
+      "emoji": "🟠",
+      "score": 1
+    },
+    "deviation": "较内在价值溢价 60%"
+  },
+  {
+    "id": "cpo",
+    "name": "🔌 CPO共封装光学",
+    "pe": 61.71,
+    "pePct": 82.1,
+    "pb": 7.56,
+    "pbPct": 98.7,
+    "fundToday": -1.05,
+    "fund5d": -443.52,
+    "fund10d": -1440.12,
+    "fund20d": -2823.5,
+    "volatility": "极高",
+    "speed": "极快",
+    "lifecycle": "初创→成长",
+    "competition": "低集中",
+    "policy": "算力基础设施重点",
+    "macro": "AI算力需求爆发",
+    "leaders": "中际旭创(300308), 天孚通信(300394)",
+    "roe": "15-25%",
+    "margin": "毛利率40-55%, 净利率20-30%",
+    "relation": "🆕 无持仓",
+    "reason": "PB 98.7%分位极度高估！PE 82.1%分位。AI算力叙事强但估值已price in未来2-3年增长。20日流出2800亿。",
+    "action": "🚫 远离！极度高估",
+    "oppClass": "avoid",
+    "signal": "🚫 远离 0★",
+    "techSignal": "MACD高位死叉，RSI 55回落",
+    "volumeNote": "高位放量下跌，主力出货",
+    "safety": {
+      "zone": "高估",
+      "cls": "overvalued",
+      "tag": "mt-high",
+      "emoji": "🟠",
+      "score": 1
+    },
+    "deviation": "较内在价值溢价 64%"
+  },
+  {
+    "id": "robot",
+    "name": "🦾 机器人概念",
+    "pe": 36.38,
+    "pePct": 56.0,
+    "pb": 2.54,
+    "pbPct": 49.6,
+    "fundToday": 6.94,
+    "fund5d": -552.67,
+    "fund10d": -2040.14,
+    "fund20d": -3318.91,
+    "volatility": "极高",
+    "speed": "极快",
+    "lifecycle": "成长",
+    "competition": "中集中",
+    "policy": "新质生产力重点",
+    "macro": "人形机器人量产元年",
+    "leaders": "绿的谐波(688017), 埃斯顿(002747)",
+    "roe": "5-12%",
+    "margin": "毛利率30-40%, 净利率8-15%",
+    "relation": "🆕 无持仓",
+    "reason": "PE 56%分位合理偏高。人形机器人是2026年最强叙事之一，但20日流出3300亿，资金兑现明显。",
+    "action": "等回调到位再考虑",
+    "oppClass": "watch",
+    "signal": "🟡 关注 2★",
+    "techSignal": "高位回落，MACD绿柱放大",
+    "volumeNote": "缩量下跌，恐慌盘不多",
+    "safety": {
+      "zone": "合理偏高",
+      "cls": "fair",
+      "tag": "mt-fair",
+      "emoji": "🟡",
+      "score": 2
+    },
+    "deviation": "较内在价值溢价 12%"
+  },
+  {
+    "id": "humanoid",
+    "name": "🤖 人形机器人",
+    "pe": 43.28,
+    "pePct": 66.2,
+    "pb": 3.36,
+    "pbPct": 72.9,
+    "fundToday": -5.02,
+    "fund5d": -306.9,
+    "fund10d": -1012.24,
+    "fund20d": -1960.55,
+    "volatility": "极高",
+    "speed": "极快",
+    "lifecycle": "初创",
+    "competition": "低集中",
+    "policy": "新质生产力核心",
+    "macro": "特斯拉Optimus催化",
+    "leaders": "三花智控(002050), 拓普集团(601689)",
+    "roe": "10-18%",
+    "margin": "毛利率25-35%, 净利率10-15%",
+    "relation": "🆕 无持仓",
+    "reason": "PE 66.2%分位偏高，20日流出1960亿。人形机器人量产进度仍不确定，估值需时间消化。",
+    "action": "暂时观望",
+    "oppClass": "wait",
+    "signal": "🔵 等待 1★",
+    "techSignal": "跌破30日线，MACD死叉",
+    "volumeNote": "持续缩量，资金退潮",
+    "safety": {
+      "zone": "合理偏高",
+      "cls": "fair",
+      "tag": "mt-fair",
+      "emoji": "🟡",
+      "score": 2
+    },
+    "deviation": "较内在价值溢价 32%"
+  },
+  {
+    "id": "low_alt",
+    "name": "🚁 低空经济",
+    "pe": 34.58,
+    "pePct": 52.9,
+    "pb": 1.89,
+    "pbPct": 26.8,
+    "fundToday": 19.99,
+    "fund5d": -139.94,
+    "fund10d": -680.32,
+    "fund20d": -997.83,
+    "volatility": "极高",
+    "speed": "极快",
+    "lifecycle": "初创→成长",
+    "competition": "低集中",
+    "policy": "政策大力扶持",
+    "macro": "低空基础设施投资加速",
+    "leaders": "亿航智能(EH), 万丰奥威(002085)",
+    "roe": "5-15%",
+    "margin": "毛利率25-40%, 净利率5-15%",
+    "relation": "🆕 无持仓 ⚡加速品种",
+    "reason": "PB仅26.8%分位偏低！今日主力+20亿大举流入。低空经济政策密集出台，eVTOL适航证推进。赛道0→1阶段弹性大。",
+    "action": "⚡ 重点关注！5%试探",
+    "oppClass": "buy",
+    "signal": "🟢 入场 4★",
+    "techSignal": "突破20日线，MACD即将金叉",
+    "volumeNote": "今日放量突破，主力资金介入",
+    "safety": {
+      "zone": "合理偏高",
+      "cls": "fair",
+      "tag": "mt-fair",
+      "emoji": "🟡",
+      "score": 2
+    },
+    "deviation": "较内在价值溢价 6%"
+  },
+  {
+    "id": "compute",
+    "name": "🧮 东数西算/算力",
+    "pe": 45.44,
+    "pePct": 68.8,
+    "pb": 3.21,
+    "pbPct": 69.3,
+    "fundToday": 6.15,
+    "fund5d": -196.0,
+    "fund10d": -959.68,
+    "fund20d": -1292.68,
+    "volatility": "极高",
+    "speed": "快",
+    "lifecycle": "成长",
+    "competition": "中集中",
+    "policy": "算力基建重点",
+    "macro": "AI算力需求持续爆发",
+    "leaders": "中科曙光(603019), 浪潮信息(000977)",
+    "roe": "8-15%",
+    "margin": "毛利率20-30%, 净利率5-10%",
+    "relation": "🆕 无持仓",
+    "reason": "PE 68.8%分位偏高，20日流出1293亿。算力是AI核心基础设施但A股标的估值已较充分。",
+    "action": "等回调至PE 50%分位以下",
+    "oppClass": "wait",
+    "signal": "🔵 等待 1★",
+    "techSignal": "MA缠绕，RSI 48中性",
+    "volumeNote": "缩量盘整，方向不明",
+    "safety": {
+      "zone": "合理偏高",
+      "cls": "fair",
+      "tag": "mt-fair",
+      "emoji": "🟡",
+      "score": 2
+    },
+    "deviation": "较内在价值溢价 38%"
+  },
+  {
+    "id": "quantum",
+    "name": "⚛️ 量子计算",
+    "pe": 188.17,
+    "pePct": 96.9,
+    "pb": 3.93,
+    "pbPct": 83.3,
+    "fundToday": -0.95,
+    "fund5d": -5.73,
+    "fund10d": -20.37,
+    "fund20d": -39.49,
+    "volatility": "极高",
+    "speed": "快",
+    "lifecycle": "初创",
+    "competition": "极低集中",
+    "policy": "前沿科技重点",
+    "macro": "量子霸权竞赛",
+    "leaders": "国盾量子(688027), 本源量子(未上市)",
+    "roe": "负值（研发期）",
+    "margin": "毛利率30-50%, 净利率负",
+    "relation": "🆕 无持仓",
+    "reason": "PE 96.9%分位极度泡沫！量子计算仍处实验室阶段，商业化至少5-10年。纯概念炒作。",
+    "action": "🚫 远离！纯概念炒作",
+    "oppClass": "avoid",
+    "signal": "🚫 远离 0★",
+    "techSignal": "高位回落，MACD死叉",
+    "volumeNote": "持续缩量，无资金关注",
+    "safety": {
+      "zone": "⚠️ 泡沫风险",
+      "cls": "bubble",
+      "tag": "mt-bubble",
+      "emoji": "🔴",
+      "score": 0
+    },
+    "deviation": "较内在价值溢价 94%"
+  },
+  {
+    "id": "brain",
+    "name": "🧠 脑机接口",
+    "pe": 77.0,
+    "pePct": 88.1,
+    "pb": 4.23,
+    "pbPct": 87.0,
+    "fundToday": 10.9,
+    "fund5d": -13.91,
+    "fund10d": -49.46,
+    "fund20d": -44.14,
+    "volatility": "极高",
+    "speed": "快",
+    "lifecycle": "初创",
+    "competition": "极低集中",
+    "policy": "前沿科技",
+    "macro": "Neuralink临床推进",
+    "leaders": "创新医疗(002173), 三博脑科(301293)",
+    "roe": "2-8%",
+    "margin": "毛利率30-50%, 净利率5-15%",
+    "relation": "🆕 无持仓",
+    "reason": "PE 88.1%分位高估区。脑机接口赛道极早期，A股标的偏概念。今日+10.9亿流入但持续性存疑。",
+    "action": "暂时不关注",
+    "oppClass": "wait",
+    "signal": "🔵 等待 1★",
+    "techSignal": "高位震荡，RSI 65偏高",
+    "volumeNote": "脉冲放量后缩量，短线资金",
+    "safety": {
+      "zone": "⚠️ 泡沫风险",
+      "cls": "bubble",
+      "tag": "mt-bubble",
+      "emoji": "🔴",
+      "score": 0
+    },
+    "deviation": "较内在价值溢价 76%"
+  },
+  {
+    "id": "solid_bat",
+    "name": "🔋 固态电池",
+    "pe": 33.71,
+    "pePct": 51.4,
+    "pb": 2.44,
+    "pbPct": 46.4,
+    "fundToday": 50.86,
+    "fund5d": -26.57,
+    "fund10d": -389.17,
+    "fund20d": -1305.01,
+    "volatility": "极高",
+    "speed": "极快",
+    "lifecycle": "初创→成长",
+    "competition": "中集中",
+    "policy": "新能源战略重点",
+    "macro": "动力电池技术迭代",
+    "leaders": "宁德时代(300750), 国轩高科(002074)",
+    "roe": "5-15%",
+    "margin": "毛利率20-30%, 净利率5-12%",
+    "relation": "🆕 无持仓 ⚡加速品种",
+    "reason": "PE 51.4%分位中性，今日主力+50.9亿大举流入！固态电池产业化加速，2026年量产元年逻辑。",
+    "action": "⚡ 重点关注！5%试探",
+    "oppClass": "buy",
+    "signal": "🟢 入场 4★",
+    "techSignal": "放量突破均线压制，MACD金叉",
+    "volumeNote": "今日大幅放量，资金认可度高",
+    "safety": {
+      "zone": "合理偏高",
+      "cls": "fair",
+      "tag": "mt-fair",
+      "emoji": "🟡",
+      "score": 2
+    },
+    "deviation": "较内在价值溢价 3%"
+  },
+  {
+    "id": "nuclear",
+    "name": "☢️ 核电",
+    "pe": 25.58,
+    "pePct": 35.9,
+    "pb": 1.65,
+    "pbPct": 18.1,
+    "fundToday": 15.9,
+    "fund5d": -85.46,
+    "fund10d": -404.91,
+    "fund20d": -769.36,
+    "volatility": "中",
+    "speed": "中",
+    "lifecycle": "成熟",
+    "competition": "高集中",
+    "policy": "核能审批加速",
+    "macro": "清洁基荷能源需求",
+    "leaders": "中国核电(601985), 中国广核(003816)",
+    "roe": "10-15%",
+    "margin": "毛利率40%+, 净利率20-25%",
+    "relation": "🆕 无持仓",
+    "reason": "PE 35.9%分位合理偏低，PB仅18.1%分位低估！核电审批重启+AI算力拉动电力需求。高股息+稳定成长。",
+    "action": "🟢 可小仓配置（≤5%）",
+    "oppClass": "watch",
+    "signal": "🟡 关注 3★",
+    "techSignal": "MA多头排列，RSI 55",
+    "volumeNote": "温和放量，趋势稳健",
+    "safety": {
+      "zone": "合理偏低",
+      "cls": "fair",
+      "tag": "mt-fair",
+      "emoji": "🟡",
+      "score": 3
+    },
+    "deviation": "较内在价值折价 28%"
+  },
+  {
+    "id": "innov_drug",
+    "name": "💉 创新药",
+    "pe": 46.56,
+    "pePct": 70.0,
+    "pb": 2.84,
+    "pbPct": 59.3,
+    "fundToday": 2.13,
+    "fund5d": -119.84,
+    "fund10d": -150.4,
+    "fund20d": -148.99,
+    "volatility": "高",
+    "speed": "中",
+    "lifecycle": "成长",
+    "competition": "分散",
+    "policy": "医保谈判边际改善",
+    "macro": "创新药出海加速",
+    "leaders": "百济神州(688235), 信达生物(01801.HK)",
+    "roe": "负~10%",
+    "margin": "毛利率70-85%, 净利率负~15%",
+    "relation": "🆕 无持仓",
+    "reason": "PE 70%分位偏高。创新药出海是长逻辑但估值不便宜。今日小幅流入但5/10/20日均流出。",
+    "action": "等回调至PE 50%分位",
+    "oppClass": "wait",
+    "signal": "🔵 等待 1★",
+    "techSignal": "底部反弹，MACD底背离",
+    "volumeNote": "缩量反弹，力度不足",
+    "safety": {
+      "zone": "合理偏高",
+      "cls": "fair",
+      "tag": "mt-fair",
+      "emoji": "🟡",
+      "score": 2
+    },
+    "deviation": "较内在价值溢价 40%"
+  },
+  {
+    "id": "consumer_elec",
+    "name": "📱 消费电子",
+    "pe": 37.37,
+    "pePct": 56.6,
+    "pb": 4.72,
+    "pbPct": 83.1,
+    "fundToday": 0.27,
+    "fund5d": 4.12,
+    "fund10d": -202.58,
+    "fund20d": -370.92,
+    "volatility": "中",
+    "speed": "中",
+    "lifecycle": "成熟",
+    "competition": "中高集中",
+    "policy": "促消费电子更新",
+    "macro": "换机周期+AI终端",
+    "leaders": "立讯精密(002475), 歌尔股份(002241)",
+    "roe": "10-18%",
+    "margin": "毛利率15-25%, 净利率5-10%",
+    "relation": "🆕 无持仓",
+    "reason": "PB 83.1%分位偏高。AI手机/AI PC换机潮是潜在催化但尚未兑现。估值合理偏高。",
+    "action": "等换机潮信号再入场",
+    "oppClass": "wait",
+    "signal": "🔵 等待 2★",
+    "techSignal": "MA缠绕，RSI 50中性",
+    "volumeNote": "缩量整理，等待催化剂",
+    "safety": {
+      "zone": "合理偏高",
+      "cls": "fair",
+      "tag": "mt-fair",
+      "emoji": "🟡",
+      "score": 2
+    },
+    "deviation": "较内在价值溢价 13%"
+  },
+  {
+    "id": "data_elem",
+    "name": "📊 数据要素",
+    "pe": 29.26,
+    "pePct": 43.0,
+    "pb": 1.85,
+    "pbPct": 25.3,
+    "fundToday": 1.74,
+    "fund5d": -167.47,
+    "fund10d": -456.89,
+    "fund20d": -607.36,
+    "volatility": "中",
+    "speed": "中",
+    "lifecycle": "初创→成长",
+    "competition": "低集中",
+    "policy": "数据二十条强力驱动",
+    "macro": "数字经济核心主线",
+    "leaders": "太极股份(002368), 深桑达A(000032)",
+    "roe": "5-12%",
+    "margin": "毛利率25-35%, 净利率5-12%",
+    "relation": "🆕 无持仓",
+    "reason": "PE 43%分位合理，PB仅25.3%分位低估！数据要素是数字经济核心，政策持续催化。但资金面偏弱。",
+    "action": "可关注，等资金信号",
+    "oppClass": "watch",
+    "signal": "🟡 关注 3★",
+    "techSignal": "底部盘整，MACD即将金叉",
+    "volumeNote": "地量横盘，等待放量突破",
+    "safety": {
+      "zone": "合理偏低",
+      "cls": "fair",
+      "tag": "mt-fair",
+      "emoji": "🟡",
+      "score": 3
+    },
+    "deviation": "较内在价值折价 14%"
+  },
+  {
+    "id": "sat_net",
+    "name": "🛰️ 卫星互联网",
+    "pe": 93.68,
+    "pePct": 91.4,
+    "pb": 2.54,
+    "pbPct": 49.8,
+    "fundToday": 12.79,
+    "fund5d": -66.41,
+    "fund10d": -385.72,
+    "fund20d": -584.54,
+    "volatility": "极高",
+    "speed": "快",
+    "lifecycle": "初创→成长",
+    "competition": "低集中",
+    "policy": "星网工程国家战略",
+    "macro": "6G+太空基建",
+    "leaders": "中国卫通(601698), 上海瀚讯(300762)",
+    "roe": "3-8%",
+    "margin": "毛利率25-35%, 净利率5-15%",
+    "relation": "🆕 无持仓",
+    "reason": "PE 91.4%分位极高！卫星互联网国家战略清晰但盈利兑现慢。今日+12.8亿流入但估值太贵。",
+    "action": "🚫 估值太贵，暂不关注",
+    "oppClass": "avoid",
+    "signal": "🚫 远离 0★",
+    "techSignal": "高位震荡，RSI 58",
+    "volumeNote": "脉冲式放量，短线资金博弈",
+    "safety": {
+      "zone": "⚠️ 泡沫风险",
+      "cls": "bubble",
+      "tag": "mt-bubble",
+      "emoji": "🔴",
+      "score": 0
+    },
+    "deviation": "较内在价值溢价 83%"
+  },
+  {
+    "id": "lithography",
+    "name": "🔬 光刻机",
+    "pe": 102.64,
+    "pePct": 92.6,
+    "pb": 7.06,
+    "pbPct": 98.3,
+    "fundToday": 1.75,
+    "fund5d": 2.52,
+    "fund10d": -208.35,
+    "fund20d": -417.34,
+    "volatility": "极高",
+    "speed": "快",
+    "lifecycle": "成长",
+    "competition": "极高集中",
+    "policy": "国产替代核心",
+    "macro": "芯片自主可控",
+    "leaders": "张江高科(600895), 茂莱光学(688502)",
+    "roe": "5-15%",
+    "margin": "毛利率35-55%, 净利率10-25%",
+    "relation": "🆕 无持仓",
+    "reason": "PE 92.6%分位极度高估，PB 98.3%分位！光刻机国产替代逻辑强但估值严重泡沫化。",
+    "action": "🚫 远离！极度泡沫",
+    "oppClass": "avoid",
+    "signal": "🚫 远离 0★",
+    "techSignal": "高位回落，MACD死叉",
+    "volumeNote": "缩量下跌，资金退潮",
+    "safety": {
+      "zone": "⚠️ 泡沫风险",
+      "cls": "bubble",
+      "tag": "mt-bubble",
+      "emoji": "🔴",
+      "score": 0
+    },
+    "deviation": "较内在价值溢价 85%"
+  },
+  {
+    "id": "hydrogen",
+    "name": "💨 氢能源",
+    "pe": 23.99,
+    "pePct": 32.9,
+    "pb": 1.53,
+    "pbPct": 14.1,
+    "fundToday": 25.04,
+    "fund5d": -80.52,
+    "fund10d": -470.39,
+    "fund20d": -1127.09,
+    "volatility": "高",
+    "speed": "中",
+    "lifecycle": "初创→成长",
+    "competition": "低集中",
+    "policy": "氢能产业规划利好",
+    "macro": "绿氢成本下降",
+    "leaders": "亿华通(688339), 美锦能源(000723)",
+    "roe": "2-8%",
+    "margin": "毛利率20-35%, 净利率负~8%",
+    "relation": "🆕 无持仓 ⚡加速品种",
+    "reason": "PE 32.9%分位合理偏低，PB仅14.1%分位深度低估！今日主力+25亿大举流入。氢能政策持续加码。",
+    "action": "⚡ 重点关注！5%试探",
+    "oppClass": "buy",
+    "signal": "🟢 入场 4★",
+    "techSignal": "底部放量反弹，MACD金叉",
+    "volumeNote": "今日大幅放量，资金拐点信号",
+    "safety": {
+      "zone": "合理偏低",
+      "cls": "fair",
+      "tag": "mt-fair",
+      "emoji": "🟡",
+      "score": 3
+    },
+    "deviation": "较内在价值折价 34%"
+  },
+  {
+    "id": "chiplet",
+    "name": "📦 先进封装Chiplet",
+    "pe": 132.45,
+    "pePct": 95.1,
+    "pb": 7.19,
+    "pbPct": 98.4,
+    "fundToday": -14.43,
+    "fund5d": -132.85,
+    "fund10d": -1130.05,
+    "fund20d": -2163.92,
+    "volatility": "极高",
+    "speed": "快",
+    "lifecycle": "成长",
+    "competition": "中集中",
+    "policy": "先进封装国产化",
+    "macro": "AI芯片封装需求爆发",
+    "leaders": "通富微电(002156), 长电科技(600584)",
+    "roe": "5-12%",
+    "margin": "毛利率15-25%, 净利率5-10%",
+    "relation": "🆕 无持仓",
+    "reason": "PE 95.1%分位极度高估，PB 98.4%分位！20日流出2164亿。Chiplet技术虽好但估值严重脱离基本面。",
+    "action": "🚫 远离！极度泡沫",
+    "oppClass": "avoid",
+    "signal": "🚫 远离 0★",
+    "techSignal": "MACD高位死叉，跌破60日线",
+    "volumeNote": "放量下跌，主力加速出逃",
+    "safety": {
+      "zone": "⚠️ 泡沫风险",
+      "cls": "bubble",
+      "tag": "mt-bubble",
+      "emoji": "🔴",
+      "score": 0
+    },
+    "deviation": "较内在价值溢价 90%"
+  },
+  {
+    "id": "storage",
+    "name": "💾 存储器",
+    "pe": 123.18,
+    "pePct": 94.5,
+    "pb": 8.26,
+    "pbPct": 99.1,
+    "fundToday": 719.07,
+    "fund5d": -131.81,
+    "fund10d": -1629.93,
+    "fund20d": -3240.78,
+    "volatility": "极高",
+    "speed": "极快",
+    "lifecycle": "成长",
+    "competition": "高集中",
+    "policy": "存储国产替代",
+    "macro": "HBM供不应求",
+    "leaders": "兆易创新(603986), 江波龙(301308)",
+    "roe": "5-15%",
+    "margin": "毛利率25-40%, 净利率8-18%",
+    "relation": "🆕 无持仓",
+    "reason": "PE 94.5%分位极度高估，PB 99.1%分位历史最高！今日+719亿异常大单流入需警惕。存储周期性强。",
+    "action": "🚫 远离！极度泡沫",
+    "oppClass": "avoid",
+    "signal": "🚫 远离 0★",
+    "techSignal": "高位放量巨震，多空分歧大",
+    "volumeNote": "今日天量，疑似对倒出货",
+    "safety": {
+      "zone": "⚠️ 泡沫风险",
+      "cls": "bubble",
+      "tag": "mt-bubble",
+      "emoji": "🔴",
+      "score": 0
+    },
+    "deviation": "较内在价值溢价 89%"
+  },
+  {
+    "id": "self_drive",
+    "name": "🚘 无人驾驶",
+    "pe": 43.84,
+    "pePct": 66.8,
+    "pb": 3.06,
+    "pbPct": 65.6,
+    "fundToday": -12.81,
+    "fund5d": -235.17,
+    "fund10d": -870.9,
+    "fund20d": -1388.23,
+    "volatility": "高",
+    "speed": "中",
+    "lifecycle": "成长",
+    "competition": "中集中",
+    "policy": "智能网联汽车政策",
+    "macro": "Robotaxi商业化加速",
+    "leaders": "德赛西威(002920), 中科创达(300496)",
+    "roe": "8-18%",
+    "margin": "毛利率25-40%, 净利率8-15%",
+    "relation": "🆕 无持仓",
+    "reason": "PE 66.8%分位偏高，20日流出1388亿。无人驾驶渗透率提升确定性强但短期估值偏贵。",
+    "action": "等回调至PE 50%分位",
+    "oppClass": "wait",
+    "signal": "🔵 等待 1★",
+    "techSignal": "跌破30日线，MACD绿柱",
+    "volumeNote": "缩量下跌，趋势偏弱",
+    "safety": {
+      "zone": "合理偏高",
+      "cls": "fair",
+      "tag": "mt-fair",
+      "emoji": "🟡",
+      "score": 2
+    },
+    "deviation": "较内在价值溢价 34%"
+  },
+  {
+    "id": "big_plane",
+    "name": "✈️ 大飞机",
+    "pe": 57.75,
+    "pePct": 79.7,
+    "pb": 2.69,
+    "pbPct": 54.8,
+    "fundToday": 4.62,
+    "fund5d": -60.05,
+    "fund10d": -289.51,
+    "fund20d": -386.03,
+    "volatility": "高",
+    "speed": "中",
+    "lifecycle": "成长",
+    "competition": "极高集中",
+    "policy": "国产大飞机战略",
+    "macro": "C919交付加速",
+    "leaders": "中航西飞(000768), 中航沈飞(600760)",
+    "roe": "5-10%",
+    "margin": "毛利率15-20%, 净利率5-8%",
+    "relation": "🆕 无持仓",
+    "reason": "PE 79.7%分位高估。C919商业化加速是长逻辑但当前估值已反映较多预期。",
+    "action": "暂时不关注",
+    "oppClass": "wait",
+    "signal": "🔵 等待 1★",
+    "techSignal": "高位震荡回落，RSI 52",
+    "volumeNote": "缩量调整，无明确方向",
+    "safety": {
+      "zone": "高估",
+      "cls": "overvalued",
+      "tag": "mt-high",
+      "emoji": "🟠",
+      "score": 1
+    },
+    "deviation": "较内在价值溢价 59%"
+  },
+  {
+    "id": "deepsea",
+    "name": "🌊 深海科技",
+    "pe": 40.77,
+    "pePct": 62.8,
+    "pb": 2.15,
+    "pbPct": 35.8,
+    "fundToday": 12.64,
+    "fund5d": -45.82,
+    "fund10d": -279.05,
+    "fund20d": -574.38,
+    "volatility": "高",
+    "speed": "中",
+    "lifecycle": "初创→成长",
+    "competition": "低集中",
+    "policy": "海洋强国战略",
+    "macro": "深海资源开发",
+    "leaders": "中国船舶(600150), 中船防务(600685)",
+    "roe": "3-8%",
+    "margin": "毛利率15-25%, 净利率3-8%",
+    "relation": "🆕 无持仓",
+    "reason": "PE 62.8%分位偏高，PB 35.8%分位合理。深海科技政策催化+资源开发叙事。今日+12.6亿流入。",
+    "action": "可关注，等更多信号",
+    "oppClass": "watch",
+    "signal": "🟡 关注 2★",
+    "techSignal": "MA缠绕，RSI 55",
+    "volumeNote": "温和放量，资金试探性介入",
+    "safety": {
+      "zone": "合理偏高",
+      "cls": "fair",
+      "tag": "mt-fair",
+      "emoji": "🟡",
+      "score": 2
+    },
+    "deviation": "较内在价值溢价 26%"
+  },
+  {
+    "id": "fusion",
+    "name": "⚡ 可控核聚变",
+    "pe": 37.07,
+    "pePct": 57.2,
+    "pb": 1.99,
+    "pbPct": 30.3,
+    "fundToday": 14.23,
+    "fund5d": -57.29,
+    "fund10d": -233.92,
+    "fund20d": -616.5,
+    "volatility": "极高",
+    "speed": "快",
+    "lifecycle": "初创",
+    "competition": "极低集中",
+    "policy": "前沿能源战略",
+    "macro": "终极能源愿景",
+    "leaders": "安泰科技(000969), 西部超导(688122)",
+    "roe": "5-12%",
+    "margin": "毛利率20-35%, 净利率5-12%",
+    "relation": "🆕 无持仓",
+    "reason": "PB 30.3%分位低估！可控核聚变是终极能源方向，技术突破不断。今日+14.2亿流入。但商业化遥远。",
+    "action": "概念关注，不做重仓",
+    "oppClass": "watch",
+    "signal": "🟡 关注 2★",
+    "techSignal": "底部反弹，MACD金叉",
+    "volumeNote": "放量反弹，短线资金活跃",
+    "safety": {
+      "zone": "合理偏高",
+      "cls": "fair",
+      "tag": "mt-fair",
+      "emoji": "🟡",
+      "score": 2
+    },
+    "deviation": "较内在价值溢价 14%"
+  }
+];
+
+function calcScore(s) {
+  let score = 0;
+  // 安全边际权重最高（40%）
+  const m = s.safety || marginZone(s.pePct);
+  if (m.score === 5) score += 2.5;
+  else if (m.score === 4) score += 2.0;
+  else if (m.score === 3) score += 1.2;
+  else if (m.score === 2) score += 0.5;
+  else if (m.score === 1) score += 0.2;
+  // else score 0
+
+  // 资金面（40%）
+  if (s.fund5d > 50) score += 2;
+  else if (s.fund5d > 0) score += 1.5;
+  else if (s.fundToday > 5) score += 1;
+  else if (s.fundToday > 0) score += 0.5;
+
+  // 波动加分（20%）—— 加速回血
+  if (s.volatility === '极高' && s.fund5d > 0) score += 0.5;
+  return Math.min(5, score);
+}
+
+function renderOpportunities() {
+  const grid = document.getElementById('opp-grid');
+  const sectors = [...ALL_SECTORS].sort((a,b) => calcScore(b) - calcScore(a));
+
+  grid.innerHTML = sectors.map(s => {
+    const score = calcScore(s);
+    const stars = Math.round(score);
+    const m = s.safety || marginZone(s.pePct);
+    const dev = s.deviation || intrinsicDeviation(s.pePct);
+
+    let cls, sigCls, actCls;
+    if (s.oppClass === 'avoid') { cls='avoid'; sigCls='sig-avoid'; actCls='act-avoid'; }
+    else if (s.oppClass === 'hold') { cls='hold'; sigCls='sig-hold'; actCls='act-hold'; }
+    else if (stars >= 4) { cls='buy'; sigCls='sig-buy'; actCls='act-buy'; }
+    else if (stars >= 2.5) { cls='watch'; sigCls='sig-watch'; actCls='act-watch'; }
+    else { cls='wait'; sigCls='sig-wait'; actCls='act-wait'; }
+
+    const starsHtml = [1,2,3,4,5].map(i =>
+      s.oppClass==='avoid' ? '<span style="color:var(--red);opacity:0.5;">✕</span>' :
+      i<=stars ? '★' : '☆'
+    ).join('');
+
+    const peColor = s.pePct<=30 ? 'var(--green)' : s.pePct<=55 ? 'var(--text-secondary)' : 'var(--red)';
+    const fund5dColor = s.fund5d>=0 ? 'var(--green)' : 'var(--red)';
+    const fundTodayColor = s.fundToday>=0 ? 'var(--green)' : 'var(--red)';
+
+    return `
+    <div class="opp-card ${cls}">
+      <div class="opp-header">
+        <span class="opp-name">${s.name}</span>
+        <span class="opp-signal ${sigCls}">${s.signal}</span>
+      </div>
+      <div style="font-size:12px;margin-bottom:4px;letter-spacing:1px;color:${stars>=4?'var(--green)':stars>=2.5?'var(--gold)':'var(--text-secondary)'};">${starsHtml}</div>
+      <div class="opp-metrics">
+        <div class="opp-metric"><div class="m-label">PE</div><div class="m-value" style="color:${peColor};">${s.pe.toFixed(1)}x</div><div style="font-size:9px;color:${peColor};">分位${s.pePct}%</div></div>
+        <div class="opp-metric"><div class="m-label">5日主力</div><div class="m-value" style="color:${fund5dColor};">${s.fund5d>=0?'+':''}${s.fund5d.toFixed(0)}亿</div></div>
+        <div class="opp-metric"><div class="m-label">今日主力</div><div class="m-value" style="color:${fundTodayColor};">${s.fundToday>=0?'+':''}${s.fundToday.toFixed(1)}亿</div></div>
+      </div>
+      <!-- 安全边际 -->
+      <div class="margin-bar"><div class="margin-fill margin-${m.cls}" style="width:${Math.max(3, 100-s.pePct)}%;"></div></div>
+      <div class="margin-label">
+        <span class="margin-tag ${m.tag}">${m.emoji} ${m.zone}</span>
+        <span style="font-size:9px;color:${m.score>=4?'var(--green)':m.score>=2?'var(--text-secondary)':'var(--red)'};">${dev}</span>
+      </div>
+      <div class="opp-reason">${s.reason}</div>
+      <!-- 技术面 -->
+      <div style="font-size:9px;margin:3px 0;display:flex;gap:8px;flex-wrap:wrap;">
+        <span title="技术信号">📈 ${s.techSignal || '暂无'}</span>
+        <span title="成交量">📊 ${s.volumeNote || '暂无'}</span>
+      </div>
+      <!-- 基本面+行业宏观 -->
+      <div style="font-size:9px;color:var(--text-secondary);margin:2px 0;display:flex;gap:6px;flex-wrap:wrap;">
+        <span title="生命周期/竞争格局/政策/宏观">🏭 ${s.lifecycle || ''} | ${s.competition || ''}</span>
+        <span title="政策导向">📜 ${s.policy || ''}</span>
+      </div>
+      <div style="font-size:9px;color:var(--text-secondary);margin:2px 0;">
+        <span title="龙头ROE/利润率">🏢 龙头：${s.leaders || ''} | ROE ${s.roe || ''}</span>
+      </div>
+      <div style="font-size:9px;color:var(--text-secondary);margin-bottom:4px;">${s.relation}</div>
+      <div class="opp-action ${actCls}">${s.action}</div>
+    </div>`;
+  }).join('');
+
+  // 通知
+  const buySectors = sectors.filter(s => s.oppClass === 'buy' || (calcScore(s) >= 4 && s.oppClass !== 'avoid' && s.oppClass !== 'hold'));
+  if (buySectors.length > 0) {
+    showToast('⚡ 入场信号', buySectors.map(s => `${s.name}：${s.action}`).join(' | '));
+  }
+
+  // ====== 🤖 自动持仓监控 ======
+  autoCheckPositionAlerts(sectors, buySectors);
+}
+
+// ====== 🤖 自动持仓监控（每次刷新时自动执行） ======
+function autoCheckPositionAlerts(allSectors, buySectors) {
+  const alerts = [];
+
+  // 1. 入场机会检测
+  if (buySectors && buySectors.length > 0) {
+    alerts.push({
+      type: 'buy', icon: '⚡', title: '入场机会',
+      detail: buySectors.map(s => `${s.name} ${s.action}`).join(' | '),
+    });
+  }
+
+  // 2. 泡沫预警检测
+  const bubbleSectors = allSectors.filter(s => (s.safety || marginZone(s.pePct)).cls === 'bubble');
+  if (bubbleSectors.length > 0) {
+    alerts.push({
+      type: 'danger', icon: '🔴', title: '泡沫预警',
+      detail: `${bubbleSectors.length}个板块泡沫风险：${bubbleSectors.map(s=>s.name).join('、')}`,
+    });
+  }
+
+  // 3. 持仓阈值检测（硬编码当前持仓数据）
+  const positions = [
+    { name:'🥇 积存金', price:4090, targetUp:4200, targetDown:3850, actionUp:'减仓1/3', actionDown:'🚨止损' },
+    { name:'🥈 白银LOF', price:59.47, targetUp:65, targetDown:50, actionUp:'减仓1/2', actionDown:'减仓1/2' },
+    { name:'⚡ 电网设备', fund5d:35.12, fundThreshold:0, actionFund:'⚠️ 减仓（资金转流出）' },
+  ];
+
+  positions.forEach(p => {
+    if (p.targetUp && p.price >= p.targetUp) {
+      alerts.push({ type:'action', icon:'📈', title:`${p.name} 止盈触发`, detail:`现价≥$${p.targetUp} → ${p.actionUp}` });
+    }
+    if (p.targetDown && p.price <= p.targetDown) {
+      alerts.push({ type:'danger', icon:'🚨', title:`${p.name} 止损触发`, detail:`现价≤$${p.targetDown} → ${p.actionDown}` });
+    }
+    if (p.fundThreshold !== undefined && p.fund5d <= p.fundThreshold) {
+      alerts.push({ type:'action', icon:'⚠️', title:`${p.name} 资金面转弱`, detail:`5日主力${p.fund5d>=0?'+':''}${p.fund5d}亿 → ${p.actionFund}` });
+    }
+  });
+
+  // 更新提醒状态条
+  updateAlertBar(alerts);
+
+  // 弹窗通知（入场机会+持仓触发）
+  const actionable = alerts.filter(a => a.type === 'buy' || a.type === 'action' || a.type === 'danger');
+  actionable.forEach(a => {
+    showToast(`${a.icon} ${a.title}`, a.detail);
+  });
+}
+
+// ====== 提醒状态条更新 ======
+function updateAlertBar(alerts) {
+  const bar = document.getElementById('alert-bar');
+  const list = document.getElementById('alert-list');
+  if (!bar || !list) return;
+
+  if (alerts.length === 0) {
+    bar.style.display = 'none';
+    return;
+  }
+  bar.style.display = 'block';
+  list.innerHTML = alerts.map(a => `
+    <div class="alert-item" style="display:flex;align-items:center;gap:6px;padding:4px 8px;border-radius:6px;font-size:10px;
+      background:${a.type==='danger'?'rgba(239,83,80,0.1)':a.type==='buy'?'rgba(38,166,154,0.1)':'rgba(255,152,0,0.08)'};">
+      <span>${a.icon}</span>
+      <strong>${a.title}</strong>
+      <span style="color:var(--text-secondary);">${a.detail}</span>
+    </div>
+  `).join('');
+}
+
+// ====== 💰 穿透式持仓实时收益估算 ======
+// 基于基金底层持股的实时价格加权计算，随刷新自动更新
+
+const STOCK_PRICES = {
+  'sh600007': { price: 18.72, prev: 18.86, chgPct: -0.74 },
+  'sh600015': { price: 7.01, prev: 7.01, chgPct: 0.00 },
+  'sh600016': { price: 3.53, prev: 3.50, chgPct: 0.86 },
+  'sh600089': { price: 20.65, prev: 20.39, chgPct: 1.28 },
+  'sh600309': { price: 74.15, prev: 73.75, chgPct: 0.54 },
+  'sh600312': { price: 19.10, prev: 18.63, chgPct: 2.52 },
+  'sh600350': { price: 11.63, prev: 11.27, chgPct: 3.19 },
+  'sh600406': { price: 23.90, prev: 23.58, chgPct: 1.36 },
+  'sh600426': { price: 21.24, prev: 20.69, chgPct: 2.66 },
+  'sh600487': { price: 55.55, prev: 52.43, chgPct: 5.95 },
+  'sh600522': { price: 32.66, prev: 31.39, chgPct: 4.05 },
+  'sh600566': { price: 26.95, prev: 26.66, chgPct: 1.09 },
+  'sh600577': { price: 7.28, prev: 7.10, chgPct: 2.54 },
+  'sh600750': { price: 25.00, prev: 24.69, chgPct: 1.26 },
+  'sh600869': { price: 15.48, prev: 14.65, chgPct: 5.67 },
+  'sh600885': { price: 34.86, prev: 34.15, chgPct: 2.08 },
+  'sh600919': { price: 11.48, prev: 11.57, chgPct: -0.78 },
+  'sh600938': { price: 31.55, prev: 31.91, chgPct: -1.13 },
+  'sh601009': { price: 11.26, prev: 11.26, chgPct: 0.00 },
+  'sh601077': { price: 6.58, prev: 6.61, chgPct: -0.45 },
+  'sh601126': { price: 44.10, prev: 41.72, chgPct: 5.70 },
+  'sh601179': { price: 14.09, prev: 13.55, chgPct: 3.99 },
+  'sh601187': { price: 7.44, prev: 7.39, chgPct: 0.68 },
+  'sh601208': { price: 43.32, prev: 41.72, chgPct: 3.84 },
+  'sh601229': { price: 9.16, prev: 9.14, chgPct: 0.22 },
+  'sh601318': { price: 53.41, prev: 54.02, chgPct: -1.13 },
+  'sh601567': { price: 15.13, prev: 15.00, chgPct: 0.87 },
+  'sh601577': { price: 9.25, prev: 9.22, chgPct: 0.33 },
+  'sh601600': { price: 9.38, prev: 9.44, chgPct: -0.64 },
+  'sh601825': { price: 8.34, prev: 8.18, chgPct: 1.96 },
+  'sh601838': { price: 18.21, prev: 18.45, chgPct: -1.30 },
+  'sh601857': { price: 10.90, prev: 11.03, chgPct: -1.18 },
+  'sh601877': { price: 24.57, prev: 24.45, chgPct: 0.49 },
+  'sh603259': { price: 124.66, prev: 125.00, chgPct: -0.27 },
+  'sh603606': { price: 39.06, prev: 39.25, chgPct: -0.48 },
+  'sh688676': { price: 72.22, prev: 68.21, chgPct: 5.88 },
+  'sz000001': { price: 11.11, prev: 11.10, chgPct: 0.09 },
+  'sz000333': { price: 84.13, prev: 84.50, chgPct: -0.44 },
+  'sz000400': { price: 22.30, prev: 22.19, chgPct: 0.50 },
+  'sz000426': { price: 33.33, prev: 31.37, chgPct: 6.25 },
+  'sz000429': { price: 15.06, prev: 14.38, chgPct: 4.73 },
+  'sz000651': { price: 40.39, prev: 40.46, chgPct: -0.17 },
+  'sz000807': { price: 25.62, prev: 25.40, chgPct: 0.87 },
+  'sz002028': { price: 168.30, prev: 162.68, chgPct: 3.45 },
+  'sz002617': { price: 5.93, prev: 5.78, chgPct: 2.60 },
+  'sz300001': { price: 34.80, prev: 35.84, chgPct: -2.90 },
+  'sz300308': { price: 1076.94, prev: 1046.51, chgPct: 2.91 },
+  'sz300502': { price: 491.00, prev: 476.02, chgPct: 3.15 },
+  'sz301031': { price: 82.02, prev: 81.45, chgPct: 0.70 },
+};
+
+const COMMODITY_PRICES = {
+  gold: 4090, silver: 59.47, usdcny: 7.28,
+  silverLof: 1.876,  // sz161226
+};
+
+const FUND_POSITIONS = [
+  {
+    name: '⚡ 天弘电网C',
+    cost: 7170, actualValue: 6098.74, actualPnL: -1071.26,
+    weightedChg: 0, todayChg: '-3.53%', chgColor: 'var(--red)',
+    topHoldings: '亨通光电(9.52%), 特变电工(9.45%), 思源电气(9.17%), 国电南瑞(8.71%), 中天科技(7.86%) + ...',
+    holdingsCount: 10,
+    currentEstimate: 6098.74,
+  },
+  {
+    name: '⚡ 华夏电网联接C 🆕',
+    cost: 1900, actualValue: 1900, actualPnL: 0,
+    weightedChg: 0, todayChg: '-3.53%', chgColor: 'var(--red)',
+    topHoldings: '亨通光电(9.52%), 特变电工(9.45%), 思源电气(9.17%), 国电南瑞(8.71%), 中天科技(7.86%) + ...',
+    holdingsCount: 10,
+    currentEstimate: 1900,
+  },
+  {
+    name: '🏦 华泰红利低波C 🆕',
+    cost: 1223.98, actualValue: 1223.98, actualPnL: 0,
+    weightedChg: 0, todayChg: '—', chgColor: 'var(--text-secondary)',
+    topHoldings: '南京银行(2.91%), 平安银行(2.77%), 上海银行(2.76%), 中国石油(2.66%), 成都银行(2.54%) + ...',
+    holdingsCount: 20,
+    currentEstimate: 1223.98,
+  },
+  {
+    name: '🔵 中欧新蓝筹A',
+    cost: 8250, actualValue: 8733.06, actualPnL: 482.94,
+    weightedChg: 0, todayChg: '-1.91%', chgColor: 'var(--red)',
+    topHoldings: '中际旭创(7.71%), 万华化学(5.6%), 亨通光电(4.15%), 云铝股份(3.55%), 新易盛(3.46%) + ...',
+    holdingsCount: 10,
+    currentEstimate: 8733.06,
+  },
+];
+
+// 积存金（18.0841克 × 实时金价）
+const GOLD_GRAM_PRICE = () => COMMODITY_PRICES.gold * COMMODITY_PRICES.usdcny / 31.1035;
+const GOLD_POSITION = {
+  name: '🏅 积存金（18.08克）', cost: 21091, actualValue: 15998.39, actualPnL: -5092.92, grams: 18.0841,
+  get currentValue() { return this.actualValue; },
+  get benchmark() { return `成本 ¥1166.3/克 · 金价 $${COMMODITY_PRICES.gold}/oz`; },
+};
+
+// 白银LOF
+const SILVER_POSITION = {
+  name: '🥈 国投白银LOF', cost: 4110, actualValue: 3202.70, actualPnL: -907.30,
+  get currentValue() { return this.actualValue; },
+  get benchmark() { return `sz161226 · 持有收益 -¥907.30`; },
+};
+
+
+function renderPositions() {
+  const body = document.getElementById('position-body');
+  if (!body) return;
+
+  const allPositions = [
+    { ...GOLD_POSITION, type: 'commodity', todayChg: '-0.8%', chgColor: 'var(--red)' },
+    { ...SILVER_POSITION, type: 'commodity', todayChg: '-0.95%', chgColor: 'var(--red)' },
+    ...FUND_POSITIONS.map(f => ({
+      ...f, type: 'fund',
+      todayChg: f.todayChg,
+      chgColor: f.chgColor,
+    })),
+  ];
+
+  const totalCost = allPositions.reduce((s,p) => s + p.cost, 0);
+  const totalValue = allPositions.reduce((s,p) => s + (p.actualValue || p.currentValue || p.currentEstimate || 0), 0);
+  const totalPnL = allPositions.reduce((s,p) => s + (p.actualPnL !== undefined ? p.actualPnL : (p.currentValue || p.currentEstimate || 0) - p.cost), 0);
+  const totalPnLPct = ((totalPnL / totalCost) * 100);
+
+  body.innerHTML = allPositions.map(p => {
+    const val = p.actualValue || p.currentValue || p.currentEstimate || 0;
+    const pnl = p.actualPnL !== undefined ? p.actualPnL : val - p.cost;
+    const pnlPct = ((pnl / p.cost) * 100);
+    const pnlColor = pnl >= 0 ? 'var(--green)' : 'var(--red)';
+    const pnlSign = pnl >= 0 ? '+' : '';
+    const ratio = ((p.cost / totalCost) * 100);
+
+    let detail = '';
+    if (p.type === 'commodity') {
+      detail = `<span style="font-size:8px;color:var(--text-secondary);">${p.benchmark || ''}</span>`;
+    } else if (p.type === 'fund') {
+      detail = `<span style="font-size:8px;color:var(--text-secondary);">穿透${p.holdingsCount || 0}只持股</span>
+                <span style="font-size:8px;color:var(--cyan);display:block;">${p.topHoldings || ''}</span>`;
+    }
+
+    let trigger = '', status = '';
+    if (p.name.includes('积存金')) {
+      trigger = '金价跌破 $3,800/oz 或累计亏损 >¥8,000 减仓';
+      status = pnl <= -5000 ? '⚠️ 注意' : '🔵 持有';
+    } else if (p.name.includes('白银')) {
+      trigger = '银价跌破 $50/oz 止损，反弹至 $65 止盈';
+      status = pnl <= -900 ? '⚠️ 接近止损' : '🔵 持有';
+    } else if (p.name.includes('天弘电网')) {
+      trigger = '电网 PE 分位跌破 30% 加仓，突破 80% 止盈';
+      status = pnl <= -1000 ? '⚠️ 关注' : '🔵 持有';
+    } else if (p.name.includes('华夏电网')) {
+      trigger = '电网 PE 分位跌破 30% 加仓，突破 80% 止盈';
+      status = '🆕 新购入';
+    } else if (p.name.includes('华泰红利')) {
+      trigger = '红利 PE 分位跌破 20% 加仓，突破 70% 止盈';
+      status = '🆕 转化完成';
+    } else if (p.name.includes('中欧新蓝筹')) {
+      trigger = '大盘跌破 4400 加仓，突破 5000 止盈';
+      status = pnl >= 400 ? '✅ 持有盈利' : '🔵 持有';
+    }
+
+    return `
+    <tr>
+      <td>${p.name}</td>
+      <td style="font-family:monospace;font-size:10px;">¥${p.cost.toLocaleString()}</td>
+      <td style="font-family:monospace;font-size:10px;">¥${Math.round(val).toLocaleString()}</td>
+      <td><strong>${ratio.toFixed(1)}%</strong></td>
+      <td style="color:${pnlColor};font-weight:600;font-family:monospace;font-size:10px;">
+        ${pnlSign}¥${Math.round(Math.abs(pnl)).toLocaleString()} (${pnlSign}${pnlPct.toFixed(1)}%)
+      </td>
+      <td style="font-size:10px;">
+        <span style="color:${p.chgColor};">${p.todayChg}</span>
+        ${detail}
+      </td>
+      <td style="font-size:9px;max-width:180px;">${trigger}</td>
+      <td style="font-size:10px;">${status}</td>
+    </tr>`;
+  }).join('') + `
+  <tr style="border-top:2px solid var(--border);font-weight:700;background:rgba(255,255,255,0.02);">
+    <td>📊 <strong>合计</strong></td>
+    <td style="font-family:monospace;">¥${totalCost.toLocaleString()}</td>
+    <td style="font-family:monospace;">¥${Math.round(totalValue).toLocaleString()}</td>
+    <td>100%</td>
+    <td style="color:${totalPnL>=0?'var(--green)':'var(--red)'};font-family:monospace;">
+      ${totalPnL>=0?'+':''}¥${Math.round(Math.abs(totalPnL)).toLocaleString()} (${totalPnL>=0?'+':''}${totalPnLPct.toFixed(1)}%)
+    </td>
+    <td style="font-size:9px;color:var(--text-secondary);">基于真实账户数据更新</td>
+  </tr>`;
+}
+
+
+function renderRanking() {
+  const body = document.getElementById('rank-body');
+  const sectors = [...ALL_SECTORS].sort((a,b) => {
+    const sa = a.fund5d * 0.5 + a.fundToday * 0.3 + (100 - a.pePct) * 0.2;
+    const sb = b.fund5d * 0.5 + b.fundToday * 0.3 + (100 - b.pePct) * 0.2;
+    return sb - sa;
+  });
+
+  body.innerHTML = sectors.map((s, i) => {
+    const rankCls = i===0 ? 'rank-1' : i===1 ? 'rank-2' : i===2 ? 'rank-3' : '';
+    const speedMap = {'极快':'⚡⚡⚡','快':'⚡⚡','中':'⚡','慢':'➖'};
+    const fitMap = {'极快':'🔥 最佳','快':'🟢 适合','中':'🟡 可考虑','慢':'🔵 稳健'};
+    const m = s.safety || marginZone(s.pePct);
+    const lcMap = {'初创':'🌱','初创→成长':'🌱→🌿','成长':'🌿','成长→成熟':'🌿→🌳','成熟':'🌳','成熟→衰退':'🌳→🍂'};
+    const lcEmoji = lcMap[s.lifecycle] || '❓';
+    return `
+    <tr>
+      <td class="${rankCls}">#${i+1}</td>
+      <td><strong>${s.name.replace(/[^\u4e00-\u9fa5]/g,'')}</strong></td>
+      <td style="color:${s.fund5d>=0?'var(--green)':'var(--red)'};">${s.fund5d>=0?'+':''}${(s.fund5d/100).toFixed(1)}亿</td>
+      <td style="color:${s.fundToday>=0?'var(--green)':'var(--red)'};">${s.fundToday>=0?'+':''}${(s.fundToday/100).toFixed(1)}亿</td>
+      <td style="color:${s.pePct<=30?'var(--green)':s.pePct<=55?'var(--text-secondary)':'var(--red)'};">${s.pePct}%</td>
+      <td><span class="margin-tag ${m.tag}">${m.emoji} ${m.zone}</span></td>
+      <td style="font-size:9px;">${lcEmoji} ${s.lifecycle || '-'} <span style="color:var(--text-secondary);">${s.competition || ''}</span></td>
+      <td style="color:${s.speed==='极快'||s.speed==='快'?'var(--green)':'var(--text-secondary)'};">${fitMap[s.speed] || ''}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ====== 估值安全边际概览条 ======
+function renderValuationStrip() {
+  const strip = document.getElementById('valuation-strip');
+  const zones = [
+    { key:'deep', label:'🟢 深度低估', range:'PE分位 <15%', color:'var(--green)', bg:'rgba(38,166,154,0.08)' },
+    { key:'value', label:'🟢 低估', range:'PE分位 15-30%', color:'#66bb6a', bg:'rgba(102,187,106,0.08)' },
+    { key:'fair', label:'🟡 合理', range:'PE分位 30-70%', color:'var(--gold)', bg:'rgba(255,193,7,0.06)' },
+    { key:'overvalued', label:'🟠 高估', range:'PE分位 70-85%', color:'var(--orange)', bg:'rgba(255,152,0,0.06)' },
+    { key:'bubble', label:'🔴 泡沫风险', range:'PE分位 >85%', color:'var(--red)', bg:'rgba(239,83,80,0.06)' },
+  ];
+
+  const counts = {};
+  zones.forEach(z => { counts[z.key] = 0; });
+  ALL_SECTORS.forEach(s => {
+    const m = s.safety || marginZone(s.pePct);
+    counts[m.cls] = (counts[m.cls] || 0) + 1;
+  });
+
+  strip.innerHTML = zones.map(z => `
+    <div class="vs-item" style="border-left: 3px solid ${z.color}; background: ${z.bg};">
+      <div class="vs-zone" style="color:${z.color};">${z.label}</div>
+      <div class="vs-count" style="color:${z.color};">${counts[z.key]}</div>
+      <div class="vs-desc">${z.range}</div>
+    </div>
+  `).join('');
+}
+
+// ====== 泡沫预警渲染 ======
+function renderBubbleWarning() {
+  const warn = document.getElementById('bubble-warn');
+  const grid = document.getElementById('bubble-grid');
+  const bubbleSectors = ALL_SECTORS.filter(s => {
+    const m = s.safety || marginZone(s.pePct);
+    return m.cls === 'bubble' || m.cls === 'overvalued';
+  });
+
+  if (bubbleSectors.length === 0) {
+    warn.style.display = 'none';
+    return;
+  }
+  warn.style.display = 'block';
+
+  grid.innerHTML = bubbleSectors.map(s => {
+    const m = s.safety || marginZone(s.pePct);
+    const dev = s.deviation || intrinsicDeviation(s.pePct);
+    const riskLevel = m.cls === 'bubble' ? '🔴 严重泡沫' : '🟠 明显高估';
+    const riskDesc = m.cls === 'bubble'
+      ? 'PE远超历史中枢，安全边际为负，追高风险极大'
+      : 'PE处于历史高位，上行空间有限，下行风险加大';
+    return `
+    <div class="bubble-item" style="border-left: 3px solid var(--red);">
+      <div class="bi-name">${s.name}</div>
+      <div class="bi-risk">${riskLevel} | PE分位 ${s.pePct}% | ${dev}</div>
+      <div class="bi-detail">${riskDesc}</div>
+      <div style="font-size:9px;color:var(--red);margin-top:4px;">⚠️ 建议：${s.action}</div>
+    </div>`;
+  }).join('');
+}
+
+// ====== 行业生命周期 & 宏观环境矩阵 ======
+function showToast(title, body) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-title').textContent = title;
+  document.getElementById('toast-body').textContent = body;
+  t.className = 'toast buy show';
+  setTimeout(() => t.classList.remove('show'), 12000);
+  if ('Notification' in window && Notification.permission === 'granted') {
+    new Notification(title, { body, icon:'📊' });
+  }
+}
+
+// 倒计时
+const INTERVAL = 60 * 60; let remaining = INTERVAL;
+setInterval(() => {
+  remaining--; if (remaining <= 0) remaining = INTERVAL;
+  const h = Math.floor(remaining/3600), m = Math.floor((remaining%3600)/60), s = remaining%60;
+  const timeStr = h > 0 ? `${h}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}` : `${m}:${s.toString().padStart(2,'0')}`;
+  document.getElementById('countdown').textContent = timeStr;
+  document.getElementById('progress-bar').style.width = `${(1-remaining/INTERVAL)*100}%`;
+}, 1000);
+
+if ('Notification' in window && Notification.permission === 'default') {
+  Notification.requestPermission();
+}
+
+renderOpportunities();
+renderRanking();
+renderValuationStrip();
+renderBubbleWarning();
+renderPositions();
+console.log(`📊 全板块监控已启动 | ${ALL_SECTORS.length}大板块 | 🛡️安全边际 | 📈技术面 | 📊资金轮动 | 💰真实持仓`);
+</script>
+
+</body>
+</html>
