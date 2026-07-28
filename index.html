@@ -185,7 +185,7 @@ tr:last-child td { border-bottom: none; }
 <body>
 
 <div class="top-bar">
-  <div><h1>📊 全板块监控 <span style="color:var(--red);font-size:15px;">📉 今日重挫</span> <span style="font-size:10px;color:var(--text-secondary);">7/28 · 电网-4.19% · 中欧-9.1% · 红利+0.77%</span></h1></div>
+  <div><h1>📊 全板块监控 <span style="color:var(--orange);font-size:15px;">⏳ 7/29 盘前</span> <span style="font-size:10px;color:var(--text-secondary);">美股纳指五连跌 · 费城半导体-4.5% · 黄金跌破$4030</span></h1></div>
   <div style="display:flex;gap:6px;flex-wrap:wrap;">
     <span class="badge badge-red">📉 今日 -¥681</span>
     <span class="badge badge-yellow">🎯 目标：保本优先</span>
@@ -202,13 +202,13 @@ tr:last-child td { border-bottom: none; }
 
 <!-- 行情快览 -->
 <div class="quick-strip">
-  <div class="quick-item"><div class="q-name">🥇 黄金</div><div class="q-price" style="color:var(--gold);">$4,044</div><div class="q-change" style="color:var(--red);">▼ 0.8%</div></div>
-  <div class="quick-item"><div class="q-name">🥈 白银</div><div class="q-price">$57.20</div><div class="q-change" style="color:var(--red);">▼ 2.1%</div></div>
-  <div class="quick-item"><div class="q-name">📈 沪深300</div><div class="q-price" style="color:var(--blue);">4,587</div><div class="q-change" style="color:var(--green);">昨日 +1.15%</div></div>
-  <div class="quick-item"><div class="q-name">💵 美元</div><div class="q-price">101.2</div><div class="q-change" style="color:var(--green);">▼ 0.1%</div></div>
-  <div class="quick-item"><div class="q-name">🏦 国债</div><div class="q-price">1.73%</div><div class="q-change" style="color:var(--text-secondary);">债牛</div></div>
-  <div class="quick-item"><div class="q-name">📊 成交额</div><div class="q-price" style="color:var(--green);">2.08万亿</div><div class="q-change" style="color:var(--green);">放量</div></div>
-  <div class="quick-item"><div class="q-name">📈 涨跌比</div><div class="q-price" style="color:var(--green);">5200↑</div><div class="q-change" style="color:var(--green);">普涨 +2.73%</div></div>
+  <div class="quick-item"><div class="q-name">🥇 黄金</div><div class="q-price" style="color:var(--gold);">$4,029</div><div class="q-change" style="color:var(--red);">▼ 1.18%</div></div>
+  <div class="quick-item"><div class="q-name">🥈 白银</div><div class="q-price">$57.34</div><div class="q-change" style="color:var(--red);">▼ 2.35%</div></div>
+  <div class="quick-item"><div class="q-name">📈 沪深300</div><div class="q-price" style="color:var(--red);">4,570</div><div class="q-change" style="color:var(--red);">昨 -0.64%</div></div>
+  <div class="quick-item"><div class="q-name">🇺🇸 纳指</div><div class="q-price" style="color:var(--red);">24,877</div><div class="q-change" style="color:var(--red);">五连跌 -0.22%</div></div>
+  <div class="quick-item"><div class="q-name">🤖 英伟达</div><div class="q-price" style="color:var(--green);">$197.01</div><div class="q-change" style="color:var(--green);">+0.25%</div></div>
+  <div class="quick-item"><div class="q-name">💵 美元</div><div class="q-price">101.42</div><div class="q-change" style="color:var(--red);">▼ 0.12%</div></div>
+  <div class="quick-item"><div class="q-name">🍎 苹果</div><div class="q-price" style="color:var(--green);">$5万亿</div><div class="q-change" style="color:var(--green);">首破</div></div>
 </div>
 
 <!-- ====== 🤖 自动提醒状态条 ====== -->
@@ -224,7 +224,7 @@ tr:last-child td { border-bottom: none; }
 <!-- 刷新 -->
 <div class="refresh-bar">
   <span>🔄 实时监控中</span><span style="color:var(--text-secondary);">|</span>
-  <span id="last-update">数据: 2026-07-28 收盘</span><span style="color:var(--text-secondary);">|</span>
+  <span id="last-update">数据: 2026-07-29 盘前</span><span style="color:var(--text-secondary);">|</span>
   <span>下次刷新: <strong id="countdown">60:00</strong></span>
   <span style="margin-left:auto;color:var(--text-secondary);font-size:9px;">覆盖33板块 · 四维分析 · 每小时刷新</span>
   <div class="progress-track"><div class="progress-fill" id="progress-bar" style="width:0%"></div></div>
@@ -241,52 +241,52 @@ tr:last-child td { border-bottom: none; }
 
 <!-- 🔮 美股夜盘预测 -->
 <div class="section" style="border-left: 3px solid var(--purple);">
-  <h2><span class="dot" style="background:var(--purple);"></span>🔮 美股夜盘 → 明日A股持仓预测 <span style="font-size:9px;color:var(--text-secondary);">每晚自动更新</span></h2>
+  <h2><span class="dot" style="background:var(--purple);"></span>🔮 美股收盘 → 今日A股持仓预测 <span style="font-size:9px;color:var(--text-secondary);">7/29 盘前更新</span></h2>
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;">
     <div style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:8px;padding:10px;">
-      <div style="font-size:10px;color:var(--text-secondary);margin-bottom:4px;">🇺🇸 纳斯达克</div>
-      <div style="font-size:18px;font-weight:700;color:var(--red);">24,623 <span style="font-size:11px;">-1.24%</span></div>
-      <div style="font-size:9px;color:var(--text-secondary);">昨日收盘 24,932</div>
+      <div style="font-size:10px;color:var(--text-secondary);margin-bottom:4px;">🇺🇸 纳斯达克（五连跌）</div>
+      <div style="font-size:18px;font-weight:700;color:var(--red);">24,877 <span style="font-size:11px;">-0.22%</span></div>
+      <div style="font-size:9px;color:var(--text-secondary);">费城半导体 -4.49% · 存储芯片暴跌</div>
     </div>
     <div style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:8px;padding:10px;">
       <div style="font-size:10px;color:var(--text-secondary);margin-bottom:4px;">🤖 英伟达 NVDA</div>
-      <div style="font-size:18px;font-weight:700;color:var(--red);">$194.05 <span style="font-size:11px;">-1.25%</span></div>
-      <div style="font-size:9px;color:var(--text-secondary);">昨日收盘 $196.51</div>
+      <div style="font-size:18px;font-weight:700;color:var(--green);">$197.01 <span style="font-size:11px;">+0.25%</span></div>
+      <div style="font-size:9px;color:var(--text-secondary);">探底回升，盘中最低 $192.74</div>
     </div>
     <div style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:8px;padding:10px;">
-      <div style="font-size:10px;color:var(--text-secondary);margin-bottom:4px;">📊 纳斯达克100</div>
-      <div style="font-size:18px;font-weight:700;color:var(--red);">27,544 <span style="font-size:11px;">-1.77%</span></div>
-      <div style="font-size:9px;color:var(--text-secondary);">昨日收盘 28,039</div>
+      <div style="font-size:10px;color:var(--text-secondary);margin-bottom:4px;">🏦 道琼斯</div>
+      <div style="font-size:18px;font-weight:700;color:var(--green);">52,747 <span style="font-size:11px;">+1.03%</span></div>
+      <div style="font-size:9px;color:var(--text-secondary);">价值股走强，资金轮动防御</div>
     </div>
   </div>
   <div style="margin-top:10px;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:6px;">
     <div style="padding:8px;border-radius:6px;background:rgba(239,83,80,0.06);border:1px solid rgba(239,83,80,0.2);">
       <strong style="font-size:10px;">⚡ 电网设备</strong>
       <span style="font-size:9px;color:var(--red);float:right;">⚠️ 偏空 -1~3%</span>
-      <div style="font-size:8px;color:var(--text-secondary);margin-top:3px;">美股AI算力连跌两日，情绪传导利空</div>
+      <div style="font-size:8px;color:var(--text-secondary);margin-top:3px;">费城半导体-4.5%，存储芯片暴跌，AI链情绪恶化</div>
     </div>
     <div style="padding:8px;border-radius:6px;background:rgba(239,83,80,0.06);border:1px solid rgba(239,83,80,0.2);">
       <strong style="font-size:10px;">🔵 中欧新蓝筹</strong>
-      <span style="font-size:9px;color:var(--red);float:right;">⚠️ 偏空 -2~5%</span>
-      <div style="font-size:8px;color:var(--text-secondary);margin-top:3px;">重仓股中际旭创/新易盛受英伟达拖累</div>
+      <span style="font-size:9px;color:var(--red);float:right;">⚠️ 偏空 -1~3%</span>
+      <div style="font-size:8px;color:var(--text-secondary);margin-top:3px;">纳指五连跌但英伟达企稳+0.25%，科技股分化</div>
     </div>
     <div style="padding:8px;border-radius:6px;background:rgba(38,166,154,0.06);border:1px solid rgba(38,166,154,0.2);">
       <strong style="font-size:10px;">🏦 红利低波</strong>
       <span style="font-size:9px;color:var(--green);float:right;">🟢 偏多 +0~1%</span>
-      <div style="font-size:8px;color:var(--text-secondary);margin-top:3px;">科技跌→资金轮动防御，红利是避风港</div>
+      <div style="font-size:8px;color:var(--text-secondary);margin-top:3px;">道指+1.03% 价值风格领涨，资金继续轮动防御</div>
     </div>
-    <div style="padding:8px;border-radius:6px;background:rgba(255,193,7,0.06);border:1px solid rgba(255,193,7,0.2);">
+    <div style="padding:8px;border-radius:6px;background:rgba(239,83,80,0.06);border:1px solid rgba(239,83,80,0.2);">
       <strong style="font-size:10px;">🏅 积存金</strong>
-      <span style="font-size:9px;color:var(--gold);float:right;">➖ 中性震荡</span>
-      <div style="font-size:8px;color:var(--text-secondary);margin-top:3px;">避险利好 vs 美元走强，$4020-4080</div>
+      <span style="font-size:9px;color:var(--red);float:right;">⚠️ 偏空 -1.18%</span>
+      <div style="font-size:8px;color:var(--text-secondary);margin-top:3px;">金价跌破$4030，COMEX跌1.18%</div>
     </div>
     <div style="padding:8px;border-radius:6px;background:rgba(239,83,80,0.06);border:1px solid rgba(239,83,80,0.2);">
       <strong style="font-size:10px;">🥈 国投白银</strong>
-      <span style="font-size:9px;color:var(--red);float:right;">⚠️ 偏空 -1~3%</span>
-      <div style="font-size:8px;color:var(--text-secondary);margin-top:3px;">科技跌→工业需求预期走弱</div>
+      <span style="font-size:9px;color:var(--red);float:right;">⚠️ 偏空 -2.35%</span>
+      <div style="font-size:8px;color:var(--text-secondary);margin-top:3px;">COMEX白银跌2.35%，工业+贵金属双杀</div>
     </div>
   </div>
-  <div style="font-size:9px;color:var(--text-secondary);margin-top:8px;">⏰ 更新于 7/28 21:59 · 数据来源：纳斯达克/英伟达实时行情 · 预测基于历史传导规律，仅供参考</div>
+  <div style="font-size:9px;color:var(--text-secondary);margin-top:8px;">⏰ 更新于 7/29 06:53 · 美股收盘数据 · 费城半导体-4.49% · 美联储今夜议息</div>
 </div>
 
 <!-- 持仓 + 条件触发（单表合一） -->
@@ -1859,8 +1859,8 @@ function renderPositions() {
   if (!body) return;
 
   const allPositions = [
-    { ...GOLD_POSITION, type: 'commodity', todayChg: '-0.8%', chgColor: 'var(--red)' },
-    { ...SILVER_POSITION, type: 'commodity', todayChg: '-0.95%', chgColor: 'var(--red)' },
+    { ...GOLD_POSITION, type: 'commodity', todayChg: '-1.18%', chgColor: 'var(--red)' },
+    { ...SILVER_POSITION, type: 'commodity', todayChg: '-2.35%', chgColor: 'var(--red)' },
     ...FUND_POSITIONS.map(f => ({
       ...f, type: 'fund',
       todayChg: f.todayChg,
