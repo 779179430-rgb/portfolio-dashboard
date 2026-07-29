@@ -187,16 +187,16 @@ tr:last-child td { border-bottom: none; }
 <div class="top-bar">
   <div><h1>📊 全板块监控 <span style="color:var(--orange);font-size:15px;">⏳ 7/29 盘前</span> <span style="font-size:10px;color:var(--text-secondary);">中欧蓝筹-4.69% · 电网-4.19% · 红利+0.77%</span></h1></div>
   <div style="display:flex;gap:6px;flex-wrap:wrap;">
-    <span class="badge badge-red">📉 今日 -¥681</span>
+    <span class="badge badge-red">📉 今日 -¥1,026</span>
     <span class="badge badge-yellow">🎯 目标：保本优先</span>
-    <span class="badge badge-blue">📅 全年累计 -¥8,568</span>
-    <span class="badge badge-green">⚡ 真实账户数据</span>
+    <span class="badge badge-blue">📅 全年累计 -¥9,491</span>
+    <span class="badge badge-red">📉 全年累计 -21.7%</span>
   </div>
   <div style="display:flex;gap:6px;flex-wrap:wrap;">
-    <span class="badge badge-red">📉 全年累计 -19.6%</span>
+    <span class="badge badge-red">📉 全年累计 -21.7%</span>
     <span class="badge badge-yellow">🎯 目标：保本优先</span>
-    <span class="badge badge-blue">📅 全年累计 -¥8,568</span>
-    <span class="badge badge-red">📉 今日 -¥681</span>
+    <span class="badge badge-blue">📅 全年累计 -¥9,491</span>
+    <span class="badge badge-red">📉 今日 -¥1,026</span>
   </div>
 </div>
 
@@ -1806,51 +1806,51 @@ const COMMODITY_PRICES = {
 const FUND_POSITIONS = [
   {
     name: '⚡ 天弘电网C',
-    cost: 7170, actualValue: 6098.74, actualPnL: -1071.26,
+    cost: 7170, actualValue: 5852.72, actualPnL: -1317.28,
     weightedChg: 0, todayChg: '-4.19%', chgColor: 'var(--red)',
     topHoldings: '亨通光电(9.78%), 特变电工(9.27%), 思源电气(9.19%), 国电南瑞(8.56%), 中天科技(7.93%) + ...',
     holdingsCount: 10,
-    currentEstimate: 6098.74,
+    currentEstimate: 5852.72,
   },
   {
     name: '⚡ 华夏电网联接C 🆕',
-    cost: 1900, actualValue: 1900, actualPnL: 0,
+    cost: 1900, actualValue: 1822.76, actualPnL: -77.24,
     weightedChg: 0, todayChg: '-4.19%', chgColor: 'var(--red)',
     topHoldings: '亨通光电(9.78%), 特变电工(9.27%), 思源电气(9.19%), 国电南瑞(8.56%), 中天科技(7.93%) + ...',
     holdingsCount: 10,
-    currentEstimate: 1900,
+    currentEstimate: 1822.76,
   },
   {
     name: '🏦 华泰红利低波C 🆕',
-    cost: 1223.98, actualValue: 1223.98, actualPnL: 0,
+    cost: 1223.98, actualValue: 1200.95, actualPnL: -23.03,
     weightedChg: 0, todayChg: '+0.77%', chgColor: 'var(--green)',
     topHoldings: '南京银行(2.91%), 平安银行(2.77%), 上海银行(2.76%), 中国石油(2.66%), 成都银行(2.54%) + ...',
     holdingsCount: 20,
-    currentEstimate: 1223.98,
+    currentEstimate: 1200.95,
   },
   {
     name: '🔵 中欧新蓝筹A',
-    cost: 8250, actualValue: 8733.06, actualPnL: 482.94,
+    cost: 8250, actualValue: 8323.66, actualPnL: 73.66,
     weightedChg: 0, todayChg: '-4.69%', chgColor: 'var(--red)',
     topHoldings: '中际旭创(-15.7%/8.5%), 新易盛(-17.1%/6.9%), 工业富联(-5.6%/4.7%), 寒武纪(-9.1%/4.3%), 万华(+0.1%/3.2%)',
     holdingsCount: 10,
-    currentEstimate: 8733.06,
+    currentEstimate: 8323.66,
   },
 ];
 
 // 积存金（18.0841克 × 实时金价）
 const GOLD_GRAM_PRICE = () => COMMODITY_PRICES.gold * COMMODITY_PRICES.usdcny / 31.1035;
 const GOLD_POSITION = {
-  name: '🏅 积存金（18.08克）', cost: 21091, actualValue: 15998.39, actualPnL: -5092.92, grams: 18.0841,
+  name: '🏅 积存金（18.08克）', cost: 21091, actualValue: 15883.37, actualPnL: -5207.94, grams: 18.0841,
   get currentValue() { return this.actualValue; },
   get benchmark() { return `成本 ¥1166.3/克 · 金价 $${COMMODITY_PRICES.gold}/oz`; },
 };
 
 // 白银LOF
 const SILVER_POSITION = {
-  name: '🥈 国投白银LOF', cost: 4110, actualValue: 3202.70, actualPnL: -907.30,
+  name: '🥈 国投白银LOF', cost: 4110, actualValue: 3150.72, actualPnL: -959.28,
   get currentValue() { return this.actualValue; },
-  get benchmark() { return `sz161226 · 持有收益 -¥907.30`; },
+  get benchmark() { return `sz161226 · 持有收益 -¥959.28`; },
 };
 
 
