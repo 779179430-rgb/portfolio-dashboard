@@ -61,7 +61,7 @@ arrow() {
 }
 
 # ========== 组装收盘报告 ==========
-REPORT="## 📊 ${TODAY} 周${W} 收盘复盘\n\n"
+REPORT="## 📊 ${TODAY} 周${W} 收盘早报\n\n"
 REPORT+="---\n\n"
 
 REPORT+="### 🏛️ 大盘收盘\n"
@@ -105,5 +105,5 @@ fi
 REPORT+="> ⚠️ 以上内容由AI基于公开信息生成，仅供参考，不构成投资建议。投资有风险，决策需谨慎。\n"
 REPORT+="> 📊 看板：[点击查看](https://779179430-rgb.github.io/portfolio-dashboard/)"
 
-send_msg "📊 ${TODAY} 收盘复盘" "$REPORT"
+send_msg "📊 ${TODAY} 收盘早报" "$REPORT"
 echo "✅ 收盘复盘已推送"

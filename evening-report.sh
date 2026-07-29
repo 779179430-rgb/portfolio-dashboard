@@ -47,7 +47,7 @@ if [ "$NQ_FUT_CHG" != "--" ] && [ -n "$NQ_FUT_CHG" ]; then
 fi
 
 # ========== 组装晚间速递 ==========
-REPORT="## 🌙 ${TODAY} 周${W} 晚间速递\n\n"
+REPORT="## 🌙 ${TODAY} 周${W} 晚间早报\n\n"
 REPORT+="---\n\n"
 
 REPORT+="### 🇺🇸 美股盘前\n"
@@ -97,5 +97,5 @@ REPORT+="- 🏅 金银：跟随美元和实际利率\n\n"
 REPORT+="> ⚠️ 以上内容由AI基于公开信息生成，仅供参考，不构成投资建议。投资有风险，决策需谨慎。\n"
 REPORT+="> 📊 看板：[点击查看](https://779179430-rgb.github.io/portfolio-dashboard/)"
 
-send_msg "🌙 ${TODAY} 晚间速递" "$REPORT"
+send_msg "🌙 ${TODAY} 晚间早报" "$REPORT"
 echo "✅ 晚间速递已推送"

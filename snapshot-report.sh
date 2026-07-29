@@ -78,7 +78,7 @@ else
 fi
 
 # ========== 组装快报 ==========
-REPORT="## ⚡ ${TODAY} ${PERIOD}快报\n\n"
+REPORT="## ⚡ ${TODAY} ${PERIOD}早报\n\n"
 REPORT+="---\n\n"
 
 REPORT+="### 📊 大盘\n"
@@ -118,5 +118,5 @@ REPORT+="- 🏦 红利低波：防御属性，波动小，耐心持有\n\n"
 REPORT+="> ⚠️ 以上内容由AI基于公开信息生成，仅供参考，不构成投资建议。\n"
 REPORT+="> 📊 看板：[点击查看](https://779179430-rgb.github.io/portfolio-dashboard/)"
 
-send_msg "⚡ ${TODAY} ${PERIOD}快报" "$REPORT"
+send_msg "📊 ${TODAY} 盘中早报·${PERIOD}" "$REPORT"
 echo "✅ ${PERIOD}快报已推送"
