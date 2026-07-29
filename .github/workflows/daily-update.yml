@@ -1,4 +1,4 @@
-name: 每日行情更新
+name: 每日行情更新 + 钉钉早报
 
 on:
   schedule:
@@ -8,8 +8,18 @@ on:
   workflow_dispatch:      # 手动触发
 
 jobs:
+  morning-report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 推送钉钉早报
+        run: bash morning-report.sh
+
   update:
     runs-on: ubuntu-latest
+    needs: morning-report
     permissions:
       contents: write
     steps:
