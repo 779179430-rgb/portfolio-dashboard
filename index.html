@@ -1807,32 +1807,32 @@ const FUND_POSITIONS = [
   {
     name: '⚡ 天弘电网C',
     cost: 7170, actualValue: 5852.72, actualPnL: -1317.28,
-    weightedChg: 0, todayChg: '+1.50%', chgColor: 'var(--red)',
-    topHoldings: '养基宝实际净值：+1.50%（按真实持仓计算）',
+    weightedChg: 0, todayChg: '-2.18%', chgColor: 'var(--green)',
+    topHoldings: '电网ETF华夏-2.18%（7/30盘中，与养基宝接近）',
     holdingsCount: 10,
     currentEstimate: 5852.72,
   },
   {
     name: '⚡ 华夏电网联接C 🆕',
     cost: 1900, actualValue: 1822.76, actualPnL: -77.24,
-    weightedChg: 0, todayChg: '+1.50%', chgColor: 'var(--red)',
-    topHoldings: '养基宝实际净值：+1.50%（按真实持仓计算）',
+    weightedChg: 0, todayChg: '-2.18%', chgColor: 'var(--green)',
+    topHoldings: '电网ETF华夏-2.18%（7/30盘中，与养基宝接近）',
     holdingsCount: 10,
     currentEstimate: 1822.76,
   },
   {
     name: '🏦 华泰红利低波C 🆕',
     cost: 1223.98, actualValue: 1200.95, actualPnL: -23.03,
-    weightedChg: 0, todayChg: '+0.92%', chgColor: 'var(--red)',
-    topHoldings: '养基宝实际净值：+0.92%（按真实持仓计算）',
+    weightedChg: 0, todayChg: '+0.76%', chgColor: 'var(--red)',
+    topHoldings: '红利低波ETF+0.76%（7/30盘中）',
     holdingsCount: 20,
     currentEstimate: 1200.95,
   },
   {
     name: '🔵 中欧新蓝筹A',
     cost: 8250, actualValue: 8323.66, actualPnL: 73.66,
-    weightedChg: 0, todayChg: '+0.52%', chgColor: 'var(--red)',
-    topHoldings: '养基宝实际净值：+0.52%（按真实持仓计算）',
+    weightedChg: 0, todayChg: '-5.06%', chgColor: 'var(--green)',
+    topHoldings: '创业板ETF-5.06%代理（AI/成长暴露，7/30盘中深跌）',
     holdingsCount: 10,
     currentEstimate: 8323.66,
   },
@@ -1859,8 +1859,8 @@ function renderPositions() {
   if (!body) return;
 
   const allPositions = [
-    { ...GOLD_POSITION, type: 'commodity', todayChg: '-0.10%', chgColor: 'var(--green)' },
-    { ...SILVER_POSITION, type: 'commodity', todayChg: '-1.08%', chgColor: 'var(--green)' },
+    { ...GOLD_POSITION, type: 'commodity', todayChg: '+0.57%', chgColor: 'var(--red)' },
+    { ...SILVER_POSITION, type: 'commodity', todayChg: '-1.50%', chgColor: 'var(--green)' },
     ...FUND_POSITIONS.map(f => ({
       ...f, type: 'fund',
       todayChg: f.todayChg,
